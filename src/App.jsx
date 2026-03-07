@@ -2,7 +2,7 @@ import { db } from './firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from "react";
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 
 
 const CSS = `
@@ -411,8 +411,28 @@ const Membres = () => {
               Se connecter 👨‍🎓
             </button>
             <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
+            <div style={{textAlign:"center",marginTop:16,color:"#888",fontSize:14}}>
+                Nouveau étudiant ? <span style={{color:"#2dcb8e",cursor:"pointer",fontWeight:600}} onClick={()=>setMode("inscription")}>Créer un compte</span>
+            </div>
           </div>
+          
         )}
+        {mode === "inscription" && (
+    <div>
+      <div style={{marginBottom:16}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
+    </div>
+    <div style={{marginBottom:24}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+    </div>
+    <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>createUserWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password).catch(()=>alert("Erreur lors de la création du compte !"))}>
+      Créer mon compte 👨‍🎓
+    </button>
+    <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>← Retour</button>
+  </div>
+)}
       </div>
     </div>
   );
