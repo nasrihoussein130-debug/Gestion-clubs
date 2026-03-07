@@ -292,7 +292,7 @@ useEffect(() => {
         <div className="form-actions">
           <button className="btn btn-primary" onClick={()=>{
             if(localForm.prenom&&localForm.email&&localForm.club){
-              setMembres(p=>[...p,{id:Date.now(),nom:`${localForm.prenom} ${localForm.nom}`,email:localForm.email,club:localForm.club,role:"Membre",c:"#4f6ef7"}]);
+              addDoc(collection(db, "membres"), {nom:`${localForm.prenom} ${localForm.nom}`,email:localForm.email,club:localForm.club,role:"Membre",c:"#4f6ef7"});
               notify(`Inscription au ${localForm.club} envoyée !`);
               setLocalForm({prenom:"",nom:"",email:"",club:"",motiv:""});
             } else notify("Remplissez les champs obligatoires.","⚠️");
