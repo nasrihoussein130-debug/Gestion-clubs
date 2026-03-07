@@ -1,7 +1,9 @@
- 
- import { db } from './firebase';
+import { db } from './firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from "react";
+import { auth } from './firebase';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
@@ -126,6 +128,11 @@ export default function App() {
   const [clubs, setClubs]   = useState(CLUBS);
   const [events, setEvents] = useState([]);
   const [membres, setMembres] = useState([]);
+  const [user, setUser] = useState(null);
+
+useEffect(() => {
+  onAuthStateChanged(auth, (u) => setUser(u));
+}, []);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
@@ -348,11 +355,31 @@ const Membres = () => {
       </div>
     </div>
   );
+  const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  return (
+    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",background:"#f0f4ff"}}>
+      <div className="modal" style={{width:400,padding:32}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:40}}>🏛️</div>
+          <div className="modal-ttl" style={{fontSize:24}}>UniClubs</div>
+          <div style={{color:"var(--muted)"}}>Université de Djibouti</div>
+        </div>
+        <div className="fgroup"><label className="flabel">Email</label><input className="finput" placeholder="email@uniclubs.dz" value={email} onChange={e=>setEmail(e.target.value)}/></div>
+        <div className="fgroup"><label className="flabel">Mot de passe</label><input className="finput" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/></div>
+        <button className="btn btn-primary" style={{width:"100%",marginTop:16}} onClick={()=>signInWithEmailAndPassword(auth,email,password).catch(()=>alert("Email ou mot de passe incorrect !"))}>Se connecter</button>
+      </div>
+    </div>
+  );
+};
 
   const pages = {accueil:Accueil,clubs:Clubs,evenements:Evenements,membres:Membres,inscription:Inscription,admin:Admin};
   const Page = pages[page];
 
+  if(!user) return <Login/>;
   return (
+    
     <>
       <style>{CSS}</style>
       <div className="layout">
