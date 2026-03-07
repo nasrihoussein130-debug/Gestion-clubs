@@ -234,7 +234,7 @@ const Evenements = () => (
   );
 
   // ── MEMBRES
- const Membres = () => {
+const Membres = () => {
     const [searchMembre, setSearchMembre] = useState("");
     const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
     return (
@@ -316,7 +316,7 @@ const Evenements = () => (
           <div className="adm-title">👥 Répartition des membres</div>
           {clubs.map(c=>(
             <div key={c.id} className="prog-item">
-              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{c.members} membres</span></div>
+              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
               <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/totalM*100}%`,background:c.color}}/></div>
             </div>
           ))}
@@ -331,7 +331,7 @@ const Evenements = () => (
               <tr key={c.id}>
                 <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
                 <td><span className="pill pill-blue">{c.cat}</span></td>
-                <td>{c.members} / {c.max}</td>
+                <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
                 <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
                 <td><button className="btn btn-red btn-sm" onClick={()=>{setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button></td>
               </tr>
