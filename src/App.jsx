@@ -231,11 +231,12 @@ export default function App() {
 
   // ── MEMBRES
   const Membres = () => {
-    const fil = membres.filter(m=>m.nom.toLowerCase().includes(search.toLowerCase()));
+    const [searchMembre, setSearchMembre] = useState("");
+    const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
     return (
       <div>
         <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div><button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button></div>
-        <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={search} onChange={e=>setSearch(e.target.value)} /></div>
+        <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={searchMembre} onChange={e=>setSearchMembre(e.target.value)} /></div>
         <div className="tbl-wrap">
           <table>
             <thead><tr><th>Nom</th><th>Email</th><th>Club</th><th>Rôle</th><th>Actions</th></tr></thead>
@@ -255,7 +256,7 @@ export default function App() {
       </div>
     );
   };
-
+  
   // ── INSCRIPTION
   const Inscription = () => {
   const [localForm, setLocalForm] = useState({ prenom:"", nom:"", email:"", club:"", motiv:"" });
