@@ -1,4 +1,7 @@
  import { useState } from "react";
+ import { db } from './firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect } from "react";
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
@@ -139,7 +142,14 @@ export default function App() {
   const [page, setPage]       = useState("accueil");
   const [clubs, setClubs]     = useState(CLUBS);
   const [events, setEvents]   = useState(EVENTS_INIT);
-  const [membres, setMembres] = useState(MEMBRES_INIT);
+const [membres, setMembres] = useState([]);
+
+useEffect(() => {
+  const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
+    setMembres(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
+  });
+  return () => unsub();
+}, []);
   const [search, setSearch]   = useState("");
   const [toast, setToast]     = useState(null);
   const [modal, setModal]     = useState(null);
