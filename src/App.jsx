@@ -234,7 +234,7 @@ const Evenements = () => (
   );
 
   // ── MEMBRES
-  const Membres = () => {
+ const Membres = () => {
     const [searchMembre, setSearchMembre] = useState("");
     const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
     return (
@@ -251,7 +251,7 @@ const Evenements = () => (
                   <td style={{color:"var(--muted)"}}>{m.email}</td>
                   <td><span className="pill pill-blue">{m.club}</span></td>
                   <td>{m.role}</td>
-                  <td><button className="btn btn-red btn-sm" onClick={()=>{setMembres(p=>p.filter(x=>x.id!==m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button></td>
+                  <td><button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button></td>
                 </tr>
               ))}
             </tbody>
