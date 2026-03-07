@@ -438,12 +438,12 @@ const Membres = () => {
   );
 };
 
+  if(!user) return <Login/>;
+  const isAdmin = user.email=== "nasri@uniclubs.dz";
   const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
 const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
 const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres,inscription:Inscription,admin:Admin};
   const Page = pages[page];
-
-  if(!user) return <Login/>;
   return (
     
     <>
