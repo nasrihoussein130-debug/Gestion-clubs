@@ -140,6 +140,12 @@ export default function App() {
     });
     return () => unsub();
   }, []);
+  useEffect(() => {
+  const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
+    if(!snapshot.empty) setClubs(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
+  });
+  return () => unsub();
+}, []);
 
   const [search, setSearch] = useState("");
   const [toast, setToast]   = useState(null);
