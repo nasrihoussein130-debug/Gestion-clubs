@@ -202,7 +202,7 @@ export default function App() {
               <div className="club-ico">{c.icon}</div>
               <div className="club-name">{c.name}</div>
               <div className="club-desc">{c.desc}</div>
-              <div className="club-footer"><div className="club-count"><b>{c.members}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
+              <div className="club-footer"><div className="club-count"><b>{membres.filter(m=>m.club===c.name).length}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
               <div className="club-btns">
                 <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
                 <button className="btn btn-ghost btn-sm">Détails</button>
