@@ -205,7 +205,7 @@ export default function App() {
               <div className="club-footer"><div className="club-count"><b>{c.members}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
               <div className="club-btns">
                 <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
-                <button className="btn btn-ghost btn-sm">Détails</button>
+                <button className="btn btn-ghost btn-sm" onClick={()=>notify(`${c.icon} ${c.name} — ${c.desc} | ${c.members}/${c.max} membres`, "ℹ️")}>Détails</button>
               </div>
             </div>
           ))}
