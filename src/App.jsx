@@ -142,7 +142,8 @@ export default function App() {
   }, []);
   useEffect(() => {
   const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
-    if(!snapshot.empty) setClubs(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
+    const clubsFirebase = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+    setClubs([...CLUBS, ...clubsFirebase]);
   });
   return () => unsub();
 }, []);
