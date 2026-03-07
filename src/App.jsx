@@ -110,12 +110,12 @@ tr:hover td { background: #f7f8fc; }
 `;
 
 const CLUBS = [
-  { id:1, name:"Club Informatique", icon:"💻", desc:"Développement, hackathons et projets tech entre passionnés.", members:42, max:50, color:"linear-gradient(90deg,#4f6ef7,#a78bfa)", cat:"Tech",    c:"#4f6ef7" },
-  { id:2, name:"Club Robotique",    icon:"🤖", desc:"Conception et programmation de robots autonomes.",          members:28, max:30, color:"linear-gradient(90deg,#2dcb8e,#38f9d7)", cat:"Tech",    c:"#2dcb8e" },
-  { id:3, name:"Club Théâtre",      icon:"🎭", desc:"Arts dramatiques et expression scénique.",                  members:35, max:40, color:"linear-gradient(90deg,#f7564a,#ff8c69)", cat:"Culture", c:"#f7564a" },
-  { id:4, name:"Club Photo",        icon:"📷", desc:"Photographie numérique, argentique et retouche.",           members:20, max:25, color:"linear-gradient(90deg,#f7a825,#ffd32a)", cat:"Art",     c:"#f7a825" },
-  { id:5, name:"Club Échecs",       icon:"♟️", desc:"Tournois internes, entraînement et stratégie avancée.",    members:18, max:30, color:"linear-gradient(90deg,#a78bfa,#c4b5fd)", cat:"Loisir",  c:"#a78bfa" },
-  { id:6, name:"Club Musique",      icon:"🎵", desc:"Groupes, jam sessions et concerts de fin d'année.",         members:30, max:30, color:"linear-gradient(90deg,#f7564a,#4f6ef7)", cat:"Art",     c:"#f76c82" },
+  { id:1, name:"Club Informatique", icon:"💻", desc:"Développement, hackathons et projets tech entre passionnés.", members:0, max:50, color:"linear-gradient(90deg,#4f6ef7,#a78bfa)", cat:"Tech",    c:"#4f6ef7" },
+  { id:2, name:"Club Robotique",    icon:"🤖", desc:"Conception et programmation de robots autonomes.",          members:0, max:30, color:"linear-gradient(90deg,#2dcb8e,#38f9d7)", cat:"Tech",    c:"#2dcb8e" },
+  { id:3, name:"Club Théâtre",      icon:"🎭", desc:"Arts dramatiques et expression scénique.",                  members:0, max:40, color:"linear-gradient(90deg,#f7564a,#ff8c69)", cat:"Culture", c:"#f7564a" },
+  { id:4, name:"Club Photo",        icon:"📷", desc:"Photographie numérique, argentique et retouche.",           members:0, max:25, color:"linear-gradient(90deg,#f7a825,#ffd32a)", cat:"Art",     c:"#f7a825" },
+  { id:5, name:"Club Échecs",       icon:"♟️", desc:"Tournois internes, entraînement et stratégie avancée.",    members:0, max:30, color:"linear-gradient(90deg,#a78bfa,#c4b5fd)", cat:"Loisir",  c:"#a78bfa" },
+  { id:6, name:"Club Musique",      icon:"🎵", desc:"Groupes, jam sessions et concerts de fin d'année.",         members:0, max:30, color:"linear-gradient(90deg,#f7564a,#4f6ef7)", cat:"Art",     c:"#f76c82" },
 ];
 
 const EVENTS_INIT = [
