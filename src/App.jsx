@@ -112,6 +112,14 @@ tr:hover td { background: #f7f8fc; }
 .close-btn { background:var(--bg); border:1px solid var(--border); color:var(--muted); width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
 .toast { position:fixed; bottom:26px; right:26px; background:#1a1d2e; color:#fff; padding:12px 18px; border-radius:12px; font-size:14px; z-index:999; box-shadow:0 8px 30px rgba(0,0,0,0.2); animation:tin 0.3s ease; display:flex; align-items:center; gap:10px; }
 @keyframes tin { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+@media (max-width: 768px) {
+  .sidebar { width: 100%; min-height: auto; position: relative; }
+  .main { margin-left: 0; padding: 16px; }
+  .layout { flex-direction: column; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .clubs-grid { grid-template-columns: 1fr; }
+  .adm-grid { grid-template-columns: 1fr; }
+}
 `;
 
 const CLUBS = [
