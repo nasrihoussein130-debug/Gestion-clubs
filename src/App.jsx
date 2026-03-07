@@ -203,11 +203,11 @@ useEffect(() => {
   );
 
   // ── CLUBS
-  const Clubs = () => {
+const Clubs = ({isAdmin=false}) => {
     const fil = clubs.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()));
     return (
       <div>
-        <div className="topbar"><div><div className="page-title">Clubs 🏛️</div><div className="page-sub">Rejoignez la communauté</div></div><button className="btn btn-primary" onClick={()=>setModal("club")}>+ Nouveau club</button></div>
+        <div className="topbar"><div><div className="page-title">Clubs 🏛️</div><div className="page-sub">Rejoignez la communauté</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("club")}>+ Nouveau club</button>}</div>
         <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un club..." value={search} onChange={e=>setSearch(e.target.value)} /></div>
         <div className="clubs-grid">
           {fil.map(c=>(
@@ -229,9 +229,9 @@ useEffect(() => {
   };
 
   // ── ÉVÉNEMENTS
-const Evenements = () => (
+const Evenements = ({isAdmin=false}) => (
     <div>
-      <div className="topbar"><div><div className="page-title">Événements 📅</div><div className="page-sub">Tous les événements à venir</div></div><button className="btn btn-primary" onClick={()=>setModal("event")}>+ Nouvel événement</button></div>
+      <div className="topbar"><div><div className="page-title">Événements 📅</div><div className="page-sub">Tous les événements à venir</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("event")}>+ Nouvel événement</button>}</div>
       <div className="events-list">
         {events.map(ev=>(
           <div key={ev.id} className="ev-row">
@@ -239,7 +239,7 @@ const Evenements = () => (
             <div className="ev-info"><div className="ev-name">{ev.title}</div><div className="ev-meta"><span className="ev-tag">{ev.club}</span>📍 {ev.lieu} · 👤 {ev.nb} places</div></div>
             <div style={{display:"flex",gap:8}}>
               <button className="btn btn-primary btn-sm" onClick={()=>notify(`Inscrit à "${ev.title}" !`)}>Participer</button>
-              <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"evenements",ev.id));notify("Événement supprimé.","🗑️");}}>🗑</button>
+              {isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"evenements",ev.id));notify("Événement supprimé.","🗑️");}}>🗑</button>}
             </div>
           </div>
         ))}
@@ -438,7 +438,9 @@ const Membres = () => {
   );
 };
 
-  const pages = {accueil:Accueil,clubs:Clubs,evenements:Evenements,membres:Membres,inscription:Inscription,admin:Admin};
+  const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
+const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
+const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres,inscription:Inscription,admin:Admin};
   const Page = pages[page];
 
   if(!user) return <Login/>;
