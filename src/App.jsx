@@ -438,7 +438,7 @@ const Evenements = () => (
               </div>
               <div className="form-actions">
                 <button className="btn btn-primary" onClick={()=>{
-                  if(form.prenom&&form.email&&form.club){setMembres(p=>[...p,{id:Date.now(),nom:form.prenom,email:form.email,club:form.club,role:form.role,c:"#4f6ef7"}]);setModal(null);notify("Membre ajouté !");setForm({prenom:"",nom:"",email:"",club:"",role:"Membre",motiv:""});}else notify("Remplissez tous les champs.","⚠️");
+                  if(form.prenom&&form.email&&form.club){addDoc(collection(db,"membres"),{nom:form.prenom,email:form.email,club:form.club,role:form.role,c:"#4f6ef7"});setModal(null);notify("Membre ajouté !");setForm({prenom:"",nom:"",email:"",club:"",role:"Membre",motiv:""});}else notify("Remplissez tous les champs.","⚠️");
                 }}>Ajouter</button>
                 <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
               </div>
