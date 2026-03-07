@@ -383,7 +383,7 @@ const Membres = () => {
               </div>
               <div className="form-actions">
                 <button className="btn btn-primary" onClick={()=>{
-                  if(ncName){setClubs(p=>[...p,{id:Date.now(),name:ncName,desc:ncDesc,icon:ncIcon||"🎯",members:0,max:parseInt(ncMax)||30,color:"linear-gradient(90deg,#4f6ef7,#a78bfa)",cat:"Autre",c:"#4f6ef7"}]);setModal(null);notify(`Club "${ncName}" créé !`);setNcName("");setNcDesc("");setNcIcon("🎯");setNcMax("30");}else notify("Entrez un nom.","⚠️");
+                  if(ncName){addDoc(collection(db,"clubs"),{name:ncName,desc:ncDesc,icon:ncIcon||"🎯",max:parseInt(ncMax)||30,color:"linear-gradient(90deg,#4f6ef7,#a78bfa)",cat:"Autre",c:"#4f6ef7"});setModal(null);notify(`Club "${ncName}" créé !`);setNcName("");setNcDesc("");setNcIcon("🎯");setNcMax("30");}else notify("Entrez un nom.","⚠️");
                 }}>Créer</button>
                 <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
               </div>
