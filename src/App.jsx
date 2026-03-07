@@ -215,7 +215,7 @@ export default function App() {
   };
 
   // ── ÉVÉNEMENTS
-  const Evenements = () => (
+const Evenements = () => (
     <div>
       <div className="topbar"><div><div className="page-title">Événements 📅</div><div className="page-sub">Tous les événements à venir</div></div><button className="btn btn-primary" onClick={()=>setModal("event")}>+ Nouvel événement</button></div>
       <div className="events-list">
@@ -225,7 +225,7 @@ export default function App() {
             <div className="ev-info"><div className="ev-name">{ev.title}</div><div className="ev-meta"><span className="ev-tag">{ev.club}</span>📍 {ev.lieu} · 👤 {ev.nb} places</div></div>
             <div style={{display:"flex",gap:8}}>
               <button className="btn btn-primary btn-sm" onClick={()=>notify(`Inscrit à "${ev.title}" !`)}>Participer</button>
-              <button className="btn btn-red btn-sm" onClick={()=>{setEvents(p=>p.filter(x=>x.id!==ev.id));notify("Événement supprimé.","🗑️");}}>🗑</button>
+              <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"evenements",ev.id));notify("Événement supprimé.","🗑️");}}>🗑</button>
             </div>
           </div>
         ))}
@@ -410,7 +410,7 @@ export default function App() {
               <div className="fgroup"><label className="flabel">Lieu</label><input className="finput" placeholder="Ex: Amphi A" value={newEv.lieu} onChange={e=>setNewEv({...newEv,lieu:e.target.value})}/></div>
               <div className="form-actions">
                 <button className="btn btn-primary" onClick={()=>{
-                  if(newEv.title&&newEv.club){setEvents(p=>[...p,{id:Date.now(),...newEv,nb:0}]);setModal(null);notify(`Événement "${newEv.title}" ajouté !`);setNewEv({title:"",club:"",day:"",month:"",lieu:""});}else notify("Remplissez titre et club.","⚠️");
+                  if(newEv.title&&newEv.club){addDoc(collection(db,"evenements"),{...newEv,nb:0});setModal(null);notify(`Événement "${newEv.title}" ajouté !`);setNewEv({title:"",club:"",day:"",month:"",lieu:""});}else notify("Remplissez titre et club.","⚠️");
                 }}>Ajouter</button>
                 <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
               </div>
