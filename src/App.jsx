@@ -189,8 +189,7 @@ export default function App() {
   );
 
   // ── CLUBS
-const Clubs = () => {
-    const [selectedClub, setSelectedClub] = useState(null);
+  const Clubs = () => {
     const fil = clubs.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()));
     return (
       <div>
@@ -206,41 +205,11 @@ const Clubs = () => {
               <div className="club-footer"><div className="club-count"><b>{c.members}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
               <div className="club-btns">
                 <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
-                <button className="btn btn-ghost btn-sm" onClick={()=>setSelectedClub(c)}>Détails</button>
+                <button className="btn btn-ghost btn-sm">Détails</button>
               </div>
             </div>
           ))}
         </div>
-
-        {selectedClub && (
-          <div className="modal-overlay" onClick={()=>setSelectedClub(null)}>
-            <div className="modal" onClick={e=>e.stopPropagation()}>
-              <div className="modal-head">
-                <div className="modal-ttl">{selectedClub.icon} {selectedClub.name}</div>
-                <button className="close-btn" onClick={()=>setSelectedClub(null)}>✕</button>
-              </div>
-              <div style={{padding:"20px"}}>
-                <p style={{marginBottom:"16px",color:"var(--muted)"}}>{selectedClub.desc}</p>
-                <div style={{display:"flex",gap:"16px",marginBottom:"16px"}}>
-                  <div className="stat" style={{flex:1}}><div className="stat-ico">👥</div><div className="stat-lbl">Membres</div><div className="stat-val">{selectedClub.members}/{selectedClub.max}</div></div>
-                  <div className="stat" style={{flex:1}}><div className="stat-ico">🏷️</div><div className="stat-lbl">Catégorie</div><div className="stat-val" style={{fontSize:"14px"}}>{selectedClub.cat}</div></div>
-                </div>
-                <div style={{marginBottom:"16px"}}><b>Événements du club :</b>
-                  {events.filter(e=>e.club===selectedClub.name).length === 0 
-                    ? <p style={{color:"var(--muted)"}}>Aucun événement prévu</p>
-                    : events.filter(e=>e.club===selectedClub.name).map(e=>(
-                        <div key={e.id} className="ev-row" style={{marginTop:"8px"}}>
-                          <div className="ev-date"><div className="ev-day">{e.day}</div><div className="ev-month">{e.month}</div></div>
-                          <div className="ev-info"><div className="ev-name">{e.title}</div><div className="ev-meta">📍 {e.lieu}</div></div>
-                        </div>
-                      ))
-                  }
-                </div>
-                <button className="btn btn-primary" style={{width:"100%"}} onClick={()=>{setSelectedClub(null);setPage("inscription");}}>Rejoindre ce club</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   };
