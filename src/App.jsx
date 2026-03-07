@@ -340,7 +340,7 @@ const Membres = () => {
                 <td><span className="pill pill-blue">{c.cat}</span></td>
                 <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
                 <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
-                <td><button className="btn btn-red btn-sm" onClick={()=>{setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button></td>
+                <td><button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button></td>
               </tr>
             ))}
           </tbody>
