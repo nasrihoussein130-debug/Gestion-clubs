@@ -121,52 +121,46 @@ const CLUBS = [
   { id:6, name:"Club Musique",      icon:"🎵", desc:"Groupes, jam sessions et concerts de fin d'année.",         members:0, max:30, color:"linear-gradient(90deg,#f7564a,#4f6ef7)", cat:"Art",     c:"#f76c82" },
 ];
 
-const EVENTS_INIT = [
-  { id:1, title:"Hackathon 48h",       club:"Club Informatique", day:"15", month:"Mar", lieu:"Amphi A",          nb:80  },
-  { id:2, title:"Concours de Robots",  club:"Club Robotique",    day:"20", month:"Mar", lieu:"Hall Technique",   nb:40  },
-  { id:3, title:"Soirée Théâtre",      club:"Club Théâtre",      day:"28", month:"Mar", lieu:"Auditorium",       nb:200 },
-  { id:4, title:"Expo Photo Annuelle", club:"Club Photo",        day:"05", month:"Avr", lieu:"Galerie centrale", nb:120 },
-  { id:5, title:"Tournoi Échecs",      club:"Club Échecs",       day:"12", month:"Avr", lieu:"Salle B12",        nb:32  },
-];
-
-const MEMBRES_INIT = [
-  { id:1, nom:"Amira Benali",   email:"a.benali@univ.dz",  club:"Club Informatique", role:"Président",       c:"#4f6ef7" },
-  { id:2, nom:"Karim Hadj",     email:"k.hadj@univ.dz",    club:"Club Robotique",    role:"Membre",          c:"#2dcb8e" },
-  { id:3, nom:"Lina Meslem",    email:"l.meslem@univ.dz",  club:"Club Théâtre",      role:"Vice-Présidente", c:"#f7564a" },
-  { id:4, nom:"Yacine Zidane",  email:"y.zidane@univ.dz",  club:"Club Photo",        role:"Membre",          c:"#f7a825" },
-  { id:5, nom:"Sara Oukaci",    email:"s.oukaci@univ.dz",  club:"Club Musique",      role:"Trésorière",      c:"#a78bfa" },
-  { id:6, nom:"Mohamed Bouzid", email:"m.bouzid@univ.dz",  club:"Club Échecs",       role:"Secrétaire",      c:"#f76c82" },
-];
-
 export default function App() {
-  const [page, setPage]       = useState("accueil");
-  const [clubs, setClubs]     = useState(CLUBS);
-  const [events, setEvents]   = useState(EVENTS_INIT);
-const [membres, setMembres] = useState([]);
+  const [page, setPage]     = useState("accueil");
+  const [clubs, setClubs]   = useState(CLUBS);
+  const [events, setEvents] = useState([]);
+  const [membres, setMembres] = useState([]);
 
-useEffect(() => {
-  const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
-    setMembres(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
-  });
-  return () => unsub();
-}, []);
-  const [search, setSearch]   = useState("");
-  const [toast, setToast]     = useState(null);
-  const [modal, setModal]     = useState(null);
-  const [form, setForm]       = useState({ prenom:"", nom:"", email:"", club:"", role:"Membre", motiv:"" });
-  const [newEv, setNewEv]     = useState({ title:"", club:"", day:"", month:"", lieu:"" });
-  const [ncName, setNcName]   = useState(""); const [ncDesc, setNcDesc] = useState(""); const [ncIcon, setNcIcon] = useState("🎯"); const [ncMax, setNcMax] = useState("30");
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
+      setMembres(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "evenements"), (snapshot) => {
+      setEvents(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
+    });
+    return () => unsub();
+  }, []);
+
+  const [search, setSearch] = useState("");
+  const [toast, setToast]   = useState(null);
+  const [modal, setModal]   = useState(null);
+  const [form, setForm]     = useState({ prenom:"", nom:"", email:"", club:"", role:"Membre", motiv:"" });
+  const [newEv, setNewEv]   = useState({ title:"", club:"", day:"", month:"", lieu:"" });
+  const [ncName, setNcName] = useState("");
+  const [ncDesc, setNcDesc] = useState("");
+  const [ncIcon, setNcIcon] = useState("🎯");
+  const [ncMax, setNcMax]   = useState("30");
 
   const notify = (msg, icon="✅") => { setToast({msg,icon}); setTimeout(()=>setToast(null),3000); };
-  const totalM = clubs.reduce((a,c)=>a+c.members,0);
+  const totalM = membres.length;
 
   const nav = [
-    {id:"accueil",label:"Tableau de bord",icon:"📊"},
-    {id:"clubs",label:"Clubs",icon:"🏛️"},
-    {id:"evenements",label:"Événements",icon:"📅"},
-    {id:"membres",label:"Membres",icon:"👥"},
-    {id:"inscription",label:"S'inscrire",icon:"✍️"},
-    {id:"admin",label:"Administration",icon:"⚙️"},
+    {id:"accueil",    label:"Tableau de bord", icon:"📊"},
+    {id:"clubs",      label:"Clubs",           icon:"🏛️"},
+    {id:"evenements", label:"Événements",      icon:"📅"},
+    {id:"membres",    label:"Membres",         icon:"👥"},
+    {id:"inscription",label:"S'inscrire",      icon:"✍️"},
+    {id:"admin",      label:"Administration",  icon:"⚙️"},
   ];
 
   // ── ACCUEIL
@@ -210,7 +204,7 @@ useEffect(() => {
               <div className="club-desc">{c.desc}</div>
               <div className="club-footer"><div className="club-count"><b>{c.members}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
               <div className="club-btns">
-                <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setClubs(p=>p.map(x=>x.id===c.id?{...x,members:x.members+1}:x));notify(`Rejoint ${c.name} !`);}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
+                <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
                 <button className="btn btn-ghost btn-sm">Détails</button>
               </div>
             </div>
