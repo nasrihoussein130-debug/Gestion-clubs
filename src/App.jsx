@@ -358,17 +358,61 @@ const Membres = () => {
   const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mode, setMode] = useState(null);
+
   return (
-    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",background:"#f0f4ff"}}>
-      <div className="modal" style={{width:400,padding:32}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontSize:40}}>🏛️</div>
-          <div className="modal-ttl" style={{fontSize:24}}>UniClubs</div>
-          <div style={{color:"var(--muted)"}}>Université de Djibouti</div>
+    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",background:"linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%)"}}>
+      <div style={{background:"white",borderRadius:24,padding:40,width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:50,marginBottom:8}}>🏛️</div>
+          <div style={{fontSize:26,fontWeight:800,color:"#1a1d2e",fontFamily:"Syne"}}>UniClubs</div>
+          <div style={{color:"#888",fontSize:14,marginTop:4}}>Université de Djibouti</div>
         </div>
-        <div className="fgroup"><label className="flabel">Email</label><input className="finput" placeholder="email@uniclubs.dz" value={email} onChange={e=>setEmail(e.target.value)}/></div>
-        <div className="fgroup"><label className="flabel">Mot de passe</label><input className="finput" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/></div>
-        <button className="btn btn-primary" style={{width:"100%",marginTop:16}} onClick={()=>signInWithEmailAndPassword(auth,email,password).catch(()=>alert("Email ou mot de passe incorrect !"))}>Se connecter</button>
+
+        {!mode && (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("admin")}>
+              🔐 Connexion Administrateur
+            </button>
+            <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>
+              👨‍🎓 Connexion Étudiant
+            </button>
+          </div>
+        )}
+
+        {mode === "admin" && (
+          <div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="email@uniclubs.dz" value={email} onChange={e=>setEmail(e.target.value)}/>
+            </div>
+            <div style={{marginBottom:24}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+            </div>
+            <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>signInWithEmailAndPassword(auth,email,password).catch(()=>alert("Email ou mot de passe incorrect !"))}>
+              Se connecter 🔐
+            </button>
+            <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
+          </div>
+        )}
+
+        {mode === "etudiant" && (
+          <div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
+            </div>
+            <div style={{marginBottom:24}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+            </div>
+            <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>signInWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password).catch(()=>alert("Numéro étudiant ou mot de passe incorrect !"))}>
+              Se connecter 👨‍🎓
+            </button>
+            <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
+          </div>
+        )}
       </div>
     </div>
   );
