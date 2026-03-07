@@ -1,7 +1,7 @@
  import { useState } from "react";
  import { db } from './firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
-import { useState, useEffect } from "react";
+  
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
