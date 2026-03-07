@@ -163,7 +163,7 @@ export default function App() {
   const Accueil = () => (
     <div>
       <div className="topbar">
-        <div><div className="page-title">Bonjour 👋</div><div className="page-sub">Voici l'état de la plateforme aujourd'hui</div></div>
+        <div><div className="page-title">Bienvenue 👋</div><div className="page-sub">Voici l'état de la plateforme aujourd'hui</div></div>
         <button className="btn btn-primary" onClick={()=>setPage("inscription")}>+ S'inscrire à un club</button>
       </div>
       <div className="stats">
