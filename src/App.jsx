@@ -248,12 +248,12 @@ const Evenements = ({isAdmin=false}) => (
   );
 
   // ── MEMBRES
-const Membres = () => {
+const Membres = ({isAdmin=false}) => {
     const [searchMembre, setSearchMembre] = useState("");
     const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
     return (
       <div>
-        <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div><button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button></div>
+        <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button>}</div>
         <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={searchMembre} onChange={e=>setSearchMembre(e.target.value)} /></div>
         <div className="tbl-wrap">
           <table>
@@ -265,7 +265,7 @@ const Membres = () => {
                   <td style={{color:"var(--muted)"}}>{m.email}</td>
                   <td><span className="pill pill-blue">{m.club}</span></td>
                   <td>{m.role}</td>
-                  <td><button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button></td>
+                  <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button>}</td>
                 </tr>
               ))}
             </tbody>
@@ -442,7 +442,8 @@ const Membres = () => {
   const isAdmin = user.email=== "nasri@uniclubs.dz";
   const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
 const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
-const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres,inscription:Inscription,admin:Admin};
+const Membres2 = () => <Membres isAdmin={isAdmin}/>;
+const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres2,inscription:Inscription,admin:Admin};
   const Page = pages[page];
   return (
     
