@@ -369,13 +369,17 @@ const Membres = ({isAdmin=false}) => {
   const [mode, setMode] = useState(null);
 
   return (
-    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",background:"linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%)"}}>
+    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",backgroundImage:"url('https://tse3.mm.bing.net/th/id/OIP.JFwaQEZsfFSfKq3phQ3zYQHaEa?rs=1&pid=ImgDetMain&o=7&rm=3')",
+backgroundSize:"cover",
+backgroundPosition:"center"}}>
       <div style={{background:"white",borderRadius:24,padding:40,width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
         <div style={{textAlign:"center",marginBottom:32}}>
           <div style={{fontSize:50,marginBottom:8}}>🏛️</div>
           <div style={{fontSize:26,fontWeight:800,color:"#1a1d2e",fontFamily:"Syne"}}>UniClubs</div>
           <div style={{color:"#888",fontSize:14,marginTop:4}}>Université de Djibouti</div>
         </div>
+
+      
 
         {!mode && (
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
