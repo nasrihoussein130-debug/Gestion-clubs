@@ -364,6 +364,9 @@ const Membres = ({isAdmin=false}) => {
     </div>
   );
   const Login = () => {
+    const [nom, setNom] = useState("");
+const [prenom, setPrenom] = useState("");
+const [emailPerso, setEmailPerso] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState(null);
@@ -429,9 +432,24 @@ backgroundPosition:"center"}}>
           </div>
           
         )}
+
         {mode === "inscription" && (
-    <div>
-      <div style={{marginBottom:16}}>
+  <div>
+    <div style={{display:"flex",gap:12,marginBottom:16}}>
+      <div style={{flex:1}}>
+        <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>PRÉNOM</label>
+        <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Ahmed" value={prenom} onChange={e=>setPrenom(e.target.value)}/>
+      </div>
+      <div style={{flex:1}}>
+        <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
+        <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Hassan" value={nom} onChange={e=>setNom(e.target.value)}/>
+      </div>
+    </div>
+    <div style={{marginBottom:16}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: ahmed@gmail.com" value={emailPerso} onChange={e=>setEmailPerso(e.target.value)}/>
+    </div>
+    <div style={{marginBottom:16}}>
       <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
       <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
     </div>
@@ -439,14 +457,14 @@ backgroundPosition:"center"}}>
       <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
       <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
     </div>
-    <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>createUserWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password).catch(()=>alert("Erreur lors de la création du compte !"))}>
+    <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>createUserWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password).then(()=>alert("Compte créé avec succès !")).catch(()=>alert("Erreur lors de la création du compte !"))}>
       Créer mon compte 👨‍🎓
     </button>
-    <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>← Retour</button>
+  <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>← Retour</button>
   </div>
 )}
-      </div>
-    </div>
+  </div>
+  </div>
   );
 };
 
