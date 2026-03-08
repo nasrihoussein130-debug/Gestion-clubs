@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from "react";
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -30,6 +30,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .user-name { font-size: 13px; color: #fff; font-weight: 500; }
 .user-role { font-size: 11px; color: #5a6080; }
 .main { margin-left: 240px; flex: 1; padding: 36px 40px; }
+.page-content { max-width: 1200px; margin: 0 auto; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
 .page-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
@@ -114,7 +115,8 @@ tr:hover td { background: #f7f8fc; }
 @keyframes tin { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
 @media (max-width: 768px) {
   .sidebar { width: 100%; min-height: auto; position: relative; }
-  .main { margin-left: 0; padding: 16px; }
+  .main { margin-left: 0; padding: 16px; display: block; }
+  .page-content { padding: 0; }
   .layout { flex-direction: column; }
   .stats { grid-template-columns: 1fr 1fr; }
   .clubs-grid { grid-template-columns: 1fr; }
@@ -480,7 +482,7 @@ const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membr
           </div>
         </aside>
 
-        <main className="main"><Page/></main>
+        <main className="main"><div className="page-content"><Page/></div></main>
 
         {toast && <div className="toast"><span>{toast.icon}</span><span>{toast.msg}</span></div>}
 
