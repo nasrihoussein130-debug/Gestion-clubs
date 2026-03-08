@@ -422,9 +422,21 @@ backgroundPosition:"center"}}>
               <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
               <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
             </div>
-            <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>signInWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password).catch(()=>alert("Numéro étudiant ou mot de passe incorrect !"))}>
-              Se connecter 👨‍🎓
-            </button>
+          <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={async ()=>{
+  try {
+    const cred = await signInWithEmailAndPassword(auth, `${email}@uniclubs.dz`, password);
+    const { getDoc, doc } = await import("firebase/firestore");
+    const snap = await getDoc(doc(db, "etudiants", cred.user.uid));
+    if (!snap.exists()) {
+      await auth.signOut();
+      alert("Votre ancien compte a été supprimé. Veuillez créer un nouveau compte.");
+    }
+  } catch(e) {
+    alert("Numéro étudiant ou mot de passe incorrect !");
+  }
+}}>
+  Se connecter 👨‍🎓
+</button>
             <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
             <div style={{textAlign:"center",marginTop:16,color:"#888",fontSize:14}}>
                 Nouveau étudiant ? <span style={{color:"#2dcb8e",cursor:"pointer",fontWeight:600}} onClick={()=>setMode("inscription")}>Créer un compte</span>
