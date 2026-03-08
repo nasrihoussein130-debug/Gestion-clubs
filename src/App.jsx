@@ -29,8 +29,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,#4f6ef7,#a78bfa); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
 .user-name { font-size: 13px; color: #fff; font-weight: 500; }
 .user-role { font-size: 11px; color: #5a6080; }
-.main { margin-left: 240px; flex: 1; padding: 36px 40px; }
-.page-content { max-width: 1200px; margin: 0 auto; }
+.main { margin-left: 240px; flex: 1; padding: 0; }
+.page-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 36px 40px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
 .page-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
