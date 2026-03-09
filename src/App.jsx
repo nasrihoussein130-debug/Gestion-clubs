@@ -176,14 +176,7 @@ useEffect(() => {
   const notify = (msg, icon="✅") => { setToast({msg,icon}); setTimeout(()=>setToast(null),3000); };
   const totalM = membres.length;
 
-  const nav = [
-  {id:"accueil",     label:"Tableau de bord", icon:"📊"},
-  {id:"clubs",       label:"Clubs",           icon:"🏛️"},
-  {id:"evenements",  label:"Événements",      icon:"📅"},
-  {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
-  {id:"inscription", label:"S'inscrire",      icon:"✍️"},
-  {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
-].filter(n => !n.adminOnly || isAdmin);
+
 
   // ── ACCUEIL
   const Accueil = () => (
@@ -495,6 +488,14 @@ backgroundPosition:"center"}}>
 
   if(!user) return <Login/>;
   const isAdmin = user.email=== "nasri@uniclubs.dz";
+    const nav = [
+  {id:"accueil",     label:"Tableau de bord", icon:"📊"},
+  {id:"clubs",       label:"Clubs",           icon:"🏛️"},
+  {id:"evenements",  label:"Événements",      icon:"📅"},
+  {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
+  {id:"inscription", label:"S'inscrire",      icon:"✍️"},
+  {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
+].filter(n => !n.adminOnly || isAdmin);
   const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
 const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
 const Membres2 = () => <Membres isAdmin={isAdmin}/>;
