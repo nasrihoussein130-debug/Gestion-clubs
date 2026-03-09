@@ -250,9 +250,18 @@ const Evenements = ({isAdmin=false}) => (
   );
 
   // ── MEMBRES
-const Membres = ({isAdmin=false}) => {
+   const Membres = ({isAdmin=false}) => {
     const [searchMembre, setSearchMembre] = useState("");
+    const [etudiants, setEtudiants] = useState([]);
     const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
+
+    useEffect(()=>{
+      const unsub = onSnapshot(collection(db,"etudiants"),(snapshot)=>{
+        setEtudiants(snapshot.docs.map(d=>({id:d.id,...d.data()})));
+      });
+      return ()=>unsub();
+    },[]);
+
     return (
       <div>
         <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button>}</div>
@@ -273,6 +282,27 @@ const Membres = ({isAdmin=false}) => {
             </tbody>
           </table>
         </div>
+
+        {isAdmin && (
+          <div style={{marginTop:32}}>
+            <div className="sec-head"><div className="sec-title">🎓 Étudiants inscrits</div></div>
+            <div className="tbl-wrap">
+              <table>
+                <thead><tr><th>Nom</th><th>Prénom</th><th>N° Étudiant</th><th>Email</th></tr></thead>
+                <tbody>
+                  {etudiants.map(e=>(
+                    <tr key={e.id}>
+                      <td>{e.nom}</td>
+                      <td>{e.prenom}</td>
+                      <td>{e.numeroEtudiant}</td>
+                      <td style={{color:"var(--muted)"}}>{e.email}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
