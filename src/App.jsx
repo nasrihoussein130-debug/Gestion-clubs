@@ -379,12 +379,12 @@ backgroundPosition:"center"}}>
 
         {!mode && (
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("admin")}>
-              🔐 Connexion Administrateur
-            </button>
-            <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>
-              👨‍🎓 Connexion Étudiant
-            </button>
+            <button className="btn-login" style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("admin")}>
+  🔐 Connexion Administrateur
+</button>
+<button className="btn-login" style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>
+  👨‍🎓 Connexion Étudiant
+</button>
           </div>
         )}
 
