@@ -522,8 +522,8 @@ const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membr
             <div className="user-name">{isAdmin ? "Administrateur" : "Étudiant"}</div>
               <div className="user-role" style={{cursor:"pointer",color:"#f7564a"}} onClick={()=>signOut(auth)}>🚪 Déconnexion</div>
             </div>
-              <div className="avatar">A</div>
-              <div><div className="user-name">Admin</div><div className="user-role">Responsable clubs</div></div>
+              
+              
             </div>
           </div>
         </aside>
