@@ -177,13 +177,13 @@ useEffect(() => {
   const totalM = membres.length;
 
   const nav = [
-    {id:"accueil",    label:"Tableau de bord", icon:"📊"},
-    {id:"clubs",      label:"Clubs",           icon:"🏛️"},
-    {id:"evenements", label:"Événements",      icon:"📅"},
-    {id:"membres",    label:"Membres",         icon:"👥"},
-    {id:"inscription",label:"S'inscrire",      icon:"✍️"},
-    {id:"admin",      label:"Administration",  icon:"⚙️"},
-  ];
+  {id:"accueil",     label:"Tableau de bord", icon:"📊"},
+  {id:"clubs",       label:"Clubs",           icon:"🏛️"},
+  {id:"evenements",  label:"Événements",      icon:"📅"},
+  {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
+  {id:"inscription", label:"S'inscrire",      icon:"✍️"},
+  {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
+].filter(n => !n.adminOnly || isAdmin);
 
   // ── ACCUEIL
   const Accueil = () => (
