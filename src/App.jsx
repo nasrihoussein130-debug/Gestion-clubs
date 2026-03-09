@@ -137,6 +137,7 @@ export default function App() {
   const [events, setEvents] = useState([]);
   const [membres, setMembres] = useState([]);
   const [user, setUser] = useState(null);
+  const [editClub, setEditClub] = useState(null);
 
 useEffect(() => {
   onAuthStateChanged(auth, (u) => setUser(u));
@@ -158,7 +159,7 @@ useEffect(() => {
   useEffect(() => {
   const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
     const clubsFirebase = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-    setClubs([...CLUBS, ...clubsFirebase]);
+  setClubs([...CLUBS, ...clubsFirebase]);
   });
   return () => unsub();
 }, []);
@@ -217,9 +218,9 @@ const Clubs = ({isAdmin=false}) => {
               <div className="club-ico">{c.icon}</div>
               <div className="club-name">{c.name}</div>
               <div className="club-desc">{c.desc}</div>
-              <div className="club-footer"><div className="club-count"><b>{membres.filter(m=>m.club===c.name).length}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Ouvert"}</span></div>
+              <div className="club-footer"><div className="club-count"><b>{membres.filter(m=>m.club===c.name).length}</b> / {c.max} membres</div><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{membres.filter(m=>m.club===c.name).length >= c.max?"Complet":"Ouvert"}</span></div>
               <div className="club-btns">
-                <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(c.members<c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
+                <button className="btn btn-primary btn-sm" style={{flex:1}} onClick={()=>{if(membres.filter(m=>m.club===c.name).length < c.max){setPage("inscription");}else notify("Ce club est complet.","⚠️");}}>Rejoindre</button>
                 <button className="btn btn-ghost btn-sm">Détails</button>
               </div>
             </div>
@@ -315,47 +316,84 @@ const Membres = ({isAdmin=false}) => {
 
   // ── ADMIN
   const Admin = () => (
-    <div>
-      <div className="topbar"><div><div className="page-title">Administration ⚙️</div><div className="page-sub">Gestion complète de la plateforme</div></div></div>
-      <div className="adm-grid">
-        <div className="adm-card">
-          <div className="adm-title">📊 Taux de remplissage</div>
-          {clubs.map(c=>(
-            <div key={c.id} className="prog-item">
-              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(c.members/c.max*100)}%</span></div>
-              <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/c.max*100}%`}}/></div>
-            </div>
-          ))}
-        </div>
-        <div className="adm-card">
-          <div className="adm-title">👥 Répartition des membres</div>
-          {clubs.map(c=>(
-            <div key={c.id} className="prog-item">
-              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
-              <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/totalM*100}%`,background:c.color}}/></div>
-            </div>
-          ))}
-        </div>
+  <div>
+    <div className="topbar"><div><div className="page-title">Administration ⚙️</div><div className="page-sub">Gestion complète de la plateforme</div></div></div>
+    <div className="adm-grid">
+      <div className="adm-card">
+        <div className="adm-title">📊 Taux de remplissage</div>
+        {clubs.map(c=>(
+          <div key={c.id} className="prog-item">
+            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(c.members/c.max*100)}%</span></div>
+            <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/c.max*100}%`}}/></div>
+          </div>
+        ))}
       </div>
-      <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
-      <div className="tbl-wrap">
-        <table>
-          <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
-          <tbody>
-            {clubs.map(c=>(
-              <tr key={c.id}>
-                <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
-                <td><span className="pill pill-blue">{c.cat}</span></td>
-                <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
-                <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
-                <td><button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="adm-card">
+        <div className="adm-title">👥 Répartition des membres</div>
+        {clubs.map(c=>(
+          <div key={c.id} className="prog-item">
+            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
+            <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/totalM*100}%`,background:c.color}}/></div>
+          </div>
+        ))}
       </div>
     </div>
-  );
+
+    {/* Modal modifier */}
+    {editClub && (
+      <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",background:"rgba(0,0,0,0.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{background:"white",borderRadius:16,padding:32,width:400,boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+          <div style={{fontSize:18,fontWeight:700,marginBottom:20}}>✏️ Modifier le club</div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
+            <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.name} onChange={e=>setEditClub({...editClub,name:e.target.value})}/>
+          </div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CATÉGORIE</label>
+            <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.cat} onChange={e=>setEditClub({...editClub,cat:e.target.value})}/>
+          </div>
+          <div style={{marginBottom:20}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CAPACITÉ MAX</label>
+            <input type="number" style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.max} onChange={e=>setEditClub({...editClub,max:Number(e.target.value)})}/>
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button style={{flex:1,padding:"10px",borderRadius:8,background:"#f0f0f0",border:"none",cursor:"pointer",fontWeight:600}} onClick={()=>setEditClub(null)}>Annuler</button>
+            <button style={{flex:1,padding:"10px",borderRadius:8,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none",cursor:"pointer",fontWeight:600}} onClick={async ()=>{
+              if(typeof editClub.id === "string"){
+                const {updateDoc, doc:fiDoc} = await import("firebase/firestore");
+                await updateDoc(fiDoc(db,"clubs",editClub.id),{name:editClub.name,cat:editClub.cat,max:editClub.max});
+              }
+              setClubs(p=>p.map(x=>x.id===editClub.id?editClub:x));
+              setEditClub(null);
+              notify("Club modifié !","✏️");
+            }}>Sauvegarder</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
+    <div className="tbl-wrap">
+      <table>
+        <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>
+          {clubs.map(c=>(
+            <tr key={c.id}>
+              <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
+              <td><span className="pill pill-blue">{c.cat}</span></td>
+              <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
+              <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
+              <td style={{display:"flex",gap:6}}>
+                <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none"}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
+                <button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
   const Login = () => {
     const [nom, setNom] = useState("");
 const [prenom, setPrenom] = useState("");
@@ -363,6 +401,7 @@ const [emailPerso, setEmailPerso] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState(null);
+
 
   return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",backgroundImage:"url('https://tse3.mm.bing.net/th/id/OIP.JFwaQEZsfFSfKq3phQ3zYQHaEa?rs=1&pid=ImgDetMain&o=7&rm=3')",
