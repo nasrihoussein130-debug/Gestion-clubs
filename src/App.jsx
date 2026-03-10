@@ -250,7 +250,7 @@ const Evenements = ({isAdmin=false}) => (
   );
 
   // ── MEMBRES
-   const Membres = ({isAdmin=false}) => {
+  const Membres = ({isAdmin=false}) => {
     const [searchMembre, setSearchMembre] = useState("");
     const [etudiants, setEtudiants] = useState([]);
     const fil = membres.filter(m=>m.nom.toLowerCase().includes(searchMembre.toLowerCase()));
@@ -264,8 +264,8 @@ const Evenements = ({isAdmin=false}) => (
 
     return (
       <div>
-        <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button>}</div>
-        <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={searchMembre} onChange={e=>setSearchMembre(e.target.value)} /></div>
+        <div className="topbar"><div><div className="page-title">Etudiant 👥</div><div className="page-sub">Liste de tous les etudiant</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("etudiant")}>+ Ajouter étudiant</button>}</div>
+        <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un etudiant..." value={searchEtudiant} onChange={e=>setSearchEtudiant(e.target.value)} /></div>
         <div className="tbl-wrap">
           <table>
             <thead><tr><th>Nom</th><th>Email</th><th>Club</th><th>Rôle</th><th>Actions</th></tr></thead>
@@ -276,7 +276,7 @@ const Evenements = ({isAdmin=false}) => (
                   <td style={{color:"var(--muted)"}}>{m.email}</td>
                   <td><span className="pill pill-blue">{m.club}</span></td>
                   <td>{m.role}</td>
-                  <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button>}</td>
+                  <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"etudiants",m.id));notify("Étudiant supprimé.","🗑️");}}>Supprimer</button>}</td>
                 </tr>
               ))}
             </tbody>
