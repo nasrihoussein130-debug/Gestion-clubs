@@ -139,9 +139,9 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [editClub, setEditClub] = useState(null);
 
-  useEffect(() => {
-    onAuthStateChanged(auth, (u) => setUser(u));
-  }, []);
+useEffect(() => {
+  onAuthStateChanged(auth, (u) => setUser(u));
+}, []);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
@@ -156,14 +156,13 @@ export default function App() {
     });
     return () => unsub();
   }, []);
-
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
-      const clubsFirebase = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-      setClubs([...CLUBS, ...clubsFirebase]);
-    });
-    return () => unsub();
-  }, []);
+  const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
+    const clubsFirebase = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+  setClubs([...CLUBS, ...clubsFirebase]);
+  });
+  return () => unsub();
+}, []);
 
   const [search, setSearch] = useState("");
   const [toast, setToast]   = useState(null);
@@ -177,6 +176,8 @@ export default function App() {
 
   const notify = (msg, icon="✅") => { setToast({msg,icon}); setTimeout(()=>setToast(null),3000); };
   const totalM = membres.length;
+
+
 
   // ── ACCUEIL
   const Accueil = () => (
@@ -204,7 +205,7 @@ export default function App() {
   );
 
   // ── CLUBS
-  const Clubs = ({isAdmin=false}) => {
+const Clubs = ({isAdmin=false}) => {
     const fil = clubs.filter(c=>c.name.toLowerCase().includes(search.toLowerCase()));
     return (
       <div>
@@ -230,7 +231,7 @@ export default function App() {
   };
 
   // ── ÉVÉNEMENTS
-  const Evenements = ({isAdmin=false}) => (
+const Evenements = ({isAdmin=false}) => (
     <div>
       <div className="topbar"><div><div className="page-title">Événements 📅</div><div className="page-sub">Tous les événements à venir</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("event")}>+ Nouvel événement</button>}</div>
       <div className="events-list">
@@ -248,154 +249,35 @@ export default function App() {
     </div>
   );
 
-  // ── MEMBRES (CORRIGÉ)
-  const Membres = ({isAdmin=false}) => {
-    const [searchMembre, setSearchMembre] = useState("");
-    const [etudiants, setEtudiants] = useState([]);
+  // ── MEMBRES
+ const Membres = ({isAdmin=false}) => {
+  const [searchMembre, setSearchMembre] = useState("");
+  const [etudiants, setEtudiants] = useState([]);
+  
+  useEffect(()=>{
+    const unsub = onSnapshot(collection(db,"etudiants"),(snapshot)=>{
+      setEtudiants(snapshot.docs.map(d=>({id:d.id,...d.data()})));
+    });
+    return ()=>unsub();
+  },[]);
 
-    useEffect(()=>{
-      const unsub = onSnapshot(collection(db,"etudiants"),(snapshot)=>{
-        setEtudiants(snapshot.docs.map(d=>({id:d.id,...d.data()})));
-      });
-      return ()=>unsub();
-    },[]);
+  const fil = etudiants.filter(m=>(m.nom||"").toLowerCase().includes(searchMembre.toLowerCase()));
 
-    const fil = etudiants.filter(m=>(m.nom||"").toLowerCase().includes(searchMembre.toLowerCase()));
-
-    return (
-      <div>
-        <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button>}</div>
-        <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={searchMembre} onChange={e=>setSearchMembre(e.target.value)} /></div>
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Nom</th><th>Prénom</th><th>N° Étudiant</th><th>Email</th><th>Club</th><th>Actions</th></tr></thead>
-            <tbody>
-              {fil.map(m=>(
-                <tr key={m.id}>
-                  <td><div className="td-flex"><div className="sm-av" style={{background:"#4f6ef7"}}>{(m.nom||"?")[0]}</div>{m.nom}</div></td>
-                  <td>{m.prenom}</td>
-                  <td>{m.numeroEtudiant}</td>
-                  <td style={{color:"var(--muted)"}}>{m.email}</td>
-                  <td><span className="pill pill-blue">{m.club||"—"}</span></td>
-                  <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"etudiants",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  };
-
-  // ── INSCRIPTION
-  const Inscription = () => {
-    const [localForm, setLocalForm] = useState({ prenom:"", nom:"", email:"", club:"", motiv:"" });
-
-    return (
-      <div>
-        <div className="topbar"><div><div className="page-title">S'inscrire ✍️</div><div className="page-sub">Rejoignez un club étudiant</div></div></div>
-        <div className="form-box">
-          <div className="form-box-title">Formulaire d'inscription</div>
-          <div className="frow">
-            <div className="fgroup"><label className="flabel">Prénom</label><input className="finput" placeholder="Ex: Amira" value={localForm.prenom} onChange={e=>setLocalForm({...localForm,prenom:e.target.value})}/></div>
-            <div className="fgroup"><label className="flabel">Nom</label><input className="finput" placeholder="Ex: Benali" value={localForm.nom} onChange={e=>setLocalForm({...localForm,nom:e.target.value})}/></div>
-          </div>
-          <div className="fgroup"><label className="flabel">Email universitaire</label><input className="finput" type="email" placeholder="prenom.nom@univ.dz" value={localForm.email} onChange={e=>setLocalForm({...localForm,email:e.target.value})}/></div>
-          <div className="fgroup"><label className="flabel">Numéro étudiant</label><input className="finput" placeholder="Ex: 2024123456"/></div>
-          <div className="fgroup"><label className="flabel">Club souhaité</label>
-            <select className="fselect" value={localForm.club} onChange={e=>setLocalForm({...localForm,club:e.target.value})}>
-              <option value="">-- Choisir un club --</option>
-              {clubs.map(c=><option key={c.id} value={c.name}>{c.icon} {c.name}</option>)}
-            </select>
-          </div>
-          <div className="fgroup"><label className="flabel">Motivation</label><textarea className="ftextarea" placeholder="Pourquoi voulez-vous rejoindre ce club ?" value={localForm.motiv} onChange={e=>setLocalForm({...localForm,motiv:e.target.value})}/></div>
-          <div className="form-actions">
-            <button className="btn btn-primary" onClick={()=>{
-              if(localForm.prenom&&localForm.email&&localForm.club){
-                addDoc(collection(db,"membres"),{nom:`${localForm.prenom} ${localForm.nom}`,email:localForm.email,club:localForm.club,role:"Membre",c:"#4f6ef7"});
-                notify(`Inscription au ${localForm.club} envoyée !`);
-                setLocalForm({prenom:"",nom:"",email:"",club:"",motiv:""});
-              } else notify("Remplissez les champs obligatoires.","⚠️");
-            }}>Soumettre</button>
-            <button className="btn btn-ghost" onClick={()=>setLocalForm({prenom:"",nom:"",email:"",club:"",motiv:""})}>Réinitialiser</button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ── ADMIN
-  const Admin = () => (
+  return (
     <div>
-      <div className="topbar"><div><div className="page-title">Administration ⚙️</div><div className="page-sub">Gestion complète de la plateforme</div></div></div>
-      <div className="adm-grid">
-        <div className="adm-card">
-          <div className="adm-title">📊 Taux de remplissage</div>
-          {clubs.map(c=>(
-            <div key={c.id} className="prog-item">
-              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(c.members/c.max*100)}%</span></div>
-              <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/c.max*100}%`}}/></div>
-            </div>
-          ))}
-        </div>
-        <div className="adm-card">
-          <div className="adm-title">👥 Répartition des membres</div>
-          {clubs.map(c=>(
-            <div key={c.id} className="prog-item">
-              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
-              <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/totalM*100}%`,background:c.color}}/></div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {editClub && (
-        <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",background:"rgba(0,0,0,0.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"white",borderRadius:16,padding:32,width:400,boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
-            <div style={{fontSize:18,fontWeight:700,marginBottom:20}}>✏️ Modifier le club</div>
-            <div style={{marginBottom:12}}>
-              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
-              <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.name} onChange={e=>setEditClub({...editClub,name:e.target.value})}/>
-            </div>
-            <div style={{marginBottom:12}}>
-              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CATÉGORIE</label>
-              <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.cat} onChange={e=>setEditClub({...editClub,cat:e.target.value})}/>
-            </div>
-            <div style={{marginBottom:20}}>
-              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CAPACITÉ MAX</label>
-              <input type="number" style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.max} onChange={e=>setEditClub({...editClub,max:Number(e.target.value)})}/>
-            </div>
-            <div style={{display:"flex",gap:10}}>
-              <button style={{flex:1,padding:"10px",borderRadius:8,background:"#f0f0f0",border:"none",cursor:"pointer",fontWeight:600}} onClick={()=>setEditClub(null)}>Annuler</button>
-              <button style={{flex:1,padding:"10px",borderRadius:8,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none",cursor:"pointer",fontWeight:600}} onClick={async ()=>{
-                if(typeof editClub.id === "string"){
-                  const {updateDoc, doc:fiDoc} = await import("firebase/firestore");
-                  await updateDoc(fiDoc(db,"clubs",editClub.id),{name:editClub.name,cat:editClub.cat,max:editClub.max});
-                }
-                setClubs(p=>p.map(x=>x.id===editClub.id?editClub:x));
-                setEditClub(null);
-                notify("Club modifié !","✏️");
-              }}>Sauvegarder</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
+      <div className="topbar"><div><div className="page-title">Membres 👥</div><div className="page-sub">Liste de tous les membres</div></div>{isAdmin && <button className="btn btn-primary" onClick={()=>setModal("membre")}>+ Ajouter</button>}</div>
+      <div className="search-row"><input className="search-in" placeholder="🔍  Rechercher un membre..." value={searchMembre} onChange={e=>setSearchMembre(e.target.value)} /></div>
       <div className="tbl-wrap">
         <table>
-          <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Nom</th><th>Email</th><th>Club</th><th>Rôle</th><th>Actions</th></tr></thead>
           <tbody>
-            {clubs.map(c=>(
-              <tr key={c.id}>
-                <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
-                <td><span className="pill pill-blue">{c.cat}</span></td>
-                <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
-                <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
-                <td style={{display:"flex",gap:6}}>
-                  <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none"}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
-                  <button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button>
-                </td>
+            {fil.map(m=>(
+              <tr key={m.id}>
+                <td><div className="td-flex"><div className="sm-av" style={{background:m.c||"#4f6ef7"}}>{(m.nom||"?")[0]}</div>{m.nom}</div></td>
+                <td style={{color:"var(--muted)"}}>{m.email}</td>
+                <td><span className="pill pill-blue">{m.club}</span></td>
+                <td>{m.role}</td>
+                <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"etudiants",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button>}</td>
               </tr>
             ))}
           </tbody>
@@ -403,145 +285,277 @@ export default function App() {
       </div>
     </div>
   );
-
-  // ── LOGIN
-  const Login = () => {
-    const [nom, setNom] = useState("");
-    const [prenom, setPrenom] = useState("");
-    const [emailPerso, setEmailPerso] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [mode, setMode] = useState(null);
-
-    return (
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",backgroundImage:"url('https://tse3.mm.bing.net/th/id/OIP.JFwaQEZsfFSfKq3phQ3zYQHaEa?rs=1&pid=ImgDetMain&o=7&rm=3')",backgroundSize:"cover",backgroundPosition:"center"}}>
-        <div style={{background:"white",borderRadius:24,padding:40,width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
-          <div style={{textAlign:"center",marginBottom:32}}>
-            <div style={{fontSize:50,marginBottom:8}}>🏛️</div>
-            <div style={{fontSize:26,fontWeight:800,color:"#1a1d2e",fontFamily:"Syne"}}>UniClubs</div>
-            <div style={{color:"#888",fontSize:14,marginTop:4}}>Université de Djibouti</div>
-          </div>
-
-          {!mode && (
-            <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("admin")}>🔐 Connexion Administrateur</button>
-              <button style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>👨‍🎓 Connexion Étudiant</button>
-            </div>
-          )}
-
-          {mode === "admin" && (
-            <div>
-              <div style={{marginBottom:16}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="email@uniclubs.dz" value={email} onChange={e=>setEmail(e.target.value)}/>
-              </div>
-              <div style={{marginBottom:24}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
-              </div>
-              <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>signInWithEmailAndPassword(auth,email,password).catch(()=>alert("Email ou mot de passe incorrect !"))}>Se connecter 🔐</button>
-              <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
-            </div>
-          )}
-
-          {mode === "etudiant" && (
-            <div>
-              <div style={{marginBottom:16}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
-              </div>
-              <div style={{marginBottom:24}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
-              </div>
-              <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={async ()=>{
-                try {
-                  const cred = await signInWithEmailAndPassword(auth, `${email}@uniclubs.dz`, password);
-                  const { getDoc, doc } = await import("firebase/firestore");
-                  const snap = await getDoc(doc(db, "etudiants", cred.user.uid));
-                  if (!snap.exists()) {
-                    await auth.signOut();
-                    alert("Votre ancien compte a été supprimé. Veuillez créer un nouveau compte.");
-                  }
-                } catch(e) {
-                  alert("Numéro étudiant ou mot de passe incorrect !");
-                }
-              }}>Se connecter 👨‍🎓</button>
-              <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
-              <div style={{textAlign:"center",marginTop:16,color:"#888",fontSize:14}}>
-                Nouveau étudiant ? <span style={{color:"#2dcb8e",cursor:"pointer",fontWeight:600}} onClick={()=>setMode("inscription")}>Créer un compte</span>
-              </div>
-            </div>
-          )}
-
-          {mode === "inscription" && (
-            <div>
-              <div style={{display:"flex",gap:12,marginBottom:16}}>
-                <div style={{flex:1}}>
-                  <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>PRÉNOM</label>
-                  <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Ahmed" value={prenom} onChange={e=>setPrenom(e.target.value)}/>
-                </div>
-                <div style={{flex:1}}>
-                  <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
-                  <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Hassan" value={nom} onChange={e=>setNom(e.target.value)}/>
-                </div>
-              </div>
-              <div style={{marginBottom:16}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: ahmed@gmail.com" value={emailPerso} onChange={e=>setEmailPerso(e.target.value)}/>
-              </div>
-              <div style={{marginBottom:16}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
-              </div>
-              <div style={{marginBottom:24}}>
-                <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
-                <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
-              </div>
-              <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>
-                createUserWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password)
-                  .then((userCredential) => {
-                    setDoc(doc(db,"etudiants",userCredential.user.uid),{
-                      nom: nom,
-                      prenom: prenom,
-                      email: emailPerso,
-                      numeroEtudiant: email,
-                      createdAt: new Date()
-                    });
-                    alert("Compte créé avec succès !");
-                  })
-                  .catch(()=>alert("Erreur lors de la création du compte !"))
-              }>Créer mon compte 👨‍🎓</button>
-              <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>← Retour</button>
-            </div>
-          )}
+};
+  
+  // ── INSCRIPTION
+  const Inscription = () => {
+  const [localForm, setLocalForm] = useState({ prenom:"", nom:"", email:"", club:"", motiv:"" });
+  
+  return (
+    <div>
+      <div className="topbar"><div><div className="page-title">S'inscrire ✍️</div><div className="page-sub">Rejoignez un club étudiant</div></div></div>
+      <div className="form-box">
+        <div className="form-box-title">Formulaire d'inscription</div>
+        <div className="frow">
+          <div className="fgroup"><label className="flabel">Prénom</label><input className="finput" placeholder="Ex: Amira" value={localForm.prenom} onChange={e=>setLocalForm({...localForm,prenom:e.target.value})}/></div>
+          <div className="fgroup"><label className="flabel">Nom</label><input className="finput" placeholder="Ex: Benali" value={localForm.nom} onChange={e=>setLocalForm({...localForm,nom:e.target.value})}/></div>
+        </div>
+        <div className="fgroup"><label className="flabel">Email universitaire</label><input className="finput" type="email" placeholder="prenom.nom@univ.dz" value={localForm.email} onChange={e=>setLocalForm({...localForm,email:e.target.value})}/></div>
+        <div className="fgroup"><label className="flabel">Numéro étudiant</label><input className="finput" placeholder="Ex: 2024123456"/></div>
+        <div className="fgroup"><label className="flabel">Club souhaité</label>
+          <select className="fselect" value={localForm.club} onChange={e=>setLocalForm({...localForm,club:e.target.value})}>
+            <option value="">-- Choisir un club --</option>
+            {clubs.map(c=><option key={c.id} value={c.name}>{c.icon} {c.name}</option>)}
+          </select>
+        </div>
+        <div className="fgroup"><label className="flabel">Motivation</label><textarea className="ftextarea" placeholder="Pourquoi voulez-vous rejoindre ce club ?" value={localForm.motiv} onChange={e=>setLocalForm({...localForm,motiv:e.target.value})}/></div>
+        <div className="form-actions">
+          <button className="btn btn-primary" onClick={()=>{
+            if(localForm.prenom&&localForm.email&&localForm.club){
+              addDoc(collection(db, "membres"), {nom:`${localForm.prenom} ${localForm.nom}`,email:localForm.email,club:localForm.club,role:"Membre",c:"#4f6ef7"});
+              notify(`Inscription au ${localForm.club} envoyée !`);
+              setLocalForm({prenom:"",nom:"",email:"",club:"",motiv:""});
+            } else notify("Remplissez les champs obligatoires.","⚠️");
+          }}>Soumettre</button>
+          <button className="btn btn-ghost" onClick={()=>setLocalForm({prenom:"",nom:"",email:"",club:"",motiv:""})}>Réinitialiser</button>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
-  if(!user) return <Login/>;
-  const isAdmin = user.email === "nasri@uniclubs.dz";
+  // ── ADMIN
+  const Admin = () => (
+  <div>
+    <div className="topbar"><div><div className="page-title">Administration ⚙️</div><div className="page-sub">Gestion complète de la plateforme</div></div></div>
+    <div className="adm-grid">
+      <div className="adm-card">
+        <div className="adm-title">📊 Taux de remplissage</div>
+        {clubs.map(c=>(
+          <div key={c.id} className="prog-item">
+            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(c.members/c.max*100)}%</span></div>
+            <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/c.max*100}%`}}/></div>
+          </div>
+        ))}
+      </div>
+      <div className="adm-card">
+        <div className="adm-title">👥 Répartition des membres</div>
+        {clubs.map(c=>(
+          <div key={c.id} className="prog-item">
+            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
+            <div className="prog-track"><div className="prog-fill" style={{width:`${c.members/totalM*100}%`,background:c.color}}/></div>
+          </div>
+        ))}
+      </div>
+    </div>
 
-  const nav = [
-    {id:"accueil",     label:"Tableau de bord", icon:"📊"},
-    {id:"clubs",       label:"Clubs",           icon:"🏛️"},
-    {id:"evenements",  label:"Événements",      icon:"📅"},
-    {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
-    {id:"inscription", label:"S'inscrire",      icon:"✍️"},
-    {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
-  ].filter(n => !n.adminOnly || isAdmin);
+    {/* Modal modifier */}
+    {editClub && (
+      <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",background:"rgba(0,0,0,0.4)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{background:"white",borderRadius:16,padding:32,width:400,boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+          <div style={{fontSize:18,fontWeight:700,marginBottom:20}}>✏️ Modifier le club</div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
+            <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.name} onChange={e=>setEditClub({...editClub,name:e.target.value})}/>
+          </div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CATÉGORIE</label>
+            <input style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.cat} onChange={e=>setEditClub({...editClub,cat:e.target.value})}/>
+          </div>
+          <div style={{marginBottom:20}}>
+            <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>CAPACITÉ MAX</label>
+            <input type="number" style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e0e0e0",fontSize:14,boxSizing:"border-box"}} value={editClub.max} onChange={e=>setEditClub({...editClub,max:Number(e.target.value)})}/>
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button style={{flex:1,padding:"10px",borderRadius:8,background:"#f0f0f0",border:"none",cursor:"pointer",fontWeight:600}} onClick={()=>setEditClub(null)}>Annuler</button>
+            <button style={{flex:1,padding:"10px",borderRadius:8,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none",cursor:"pointer",fontWeight:600}} onClick={async ()=>{
+              if(typeof editClub.id === "string"){
+                const {updateDoc, doc:fiDoc} = await import("firebase/firestore");
+                await updateDoc(fiDoc(db,"clubs",editClub.id),{name:editClub.name,cat:editClub.cat,max:editClub.max});
+              }
+              setClubs(p=>p.map(x=>x.id===editClub.id?editClub:x));
+              setEditClub(null);
+              notify("Club modifié !","✏️");
+            }}>Sauvegarder</button>
+          </div>
+        </div>
+      </div>
+    )}
 
-  const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
-  const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
-  const Membres2 = () => <Membres isAdmin={isAdmin}/>;
-  const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres2,inscription:Inscription,admin:Admin};
-  const Page = pages[page];
+    <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
+    <div className="tbl-wrap">
+      <table>
+        <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>
+          {clubs.map(c=>(
+            <tr key={c.id}>
+              <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
+              <td><span className="pill pill-blue">{c.cat}</span></td>
+              <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
+              <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
+              <td style={{display:"flex",gap:6}}>
+                <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none"}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
+                <button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+  const Login = () => {
+    const [nom, setNom] = useState("");
+const [prenom, setPrenom] = useState("");
+const [emailPerso, setEmailPerso] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState(null);
+
 
   return (
+    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",backgroundImage:"url('https://tse3.mm.bing.net/th/id/OIP.JFwaQEZsfFSfKq3phQ3zYQHaEa?rs=1&pid=ImgDetMain&o=7&rm=3')",
+backgroundSize:"cover",
+backgroundPosition:"center"}}>
+      <div style={{background:"white",borderRadius:24,padding:40,width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:50,marginBottom:8}}>🏛️</div>
+          <div style={{fontSize:26,fontWeight:800,color:"#1a1d2e",fontFamily:"Syne"}}>UniClubs</div>
+          <div style={{color:"#888",fontSize:14,marginTop:4}}>Université de Djibouti</div>
+        </div>
+
+      
+
+        {!mode && (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <button className="btn-login" style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("admin")}>
+  🔐 Connexion Administrateur
+</button>
+<button className="btn-login" style={{padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>
+  👨‍🎓 Connexion Étudiant
+</button>
+          </div>
+        )}
+
+        {mode === "admin" && (
+          <div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="email@uniclubs.dz" value={email} onChange={e=>setEmail(e.target.value)}/>
+            </div>
+            <div style={{marginBottom:24}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+            </div>
+            <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>signInWithEmailAndPassword(auth,email,password).catch(()=>alert("Email ou mot de passe incorrect !"))}>
+              Se connecter 🔐
+            </button>
+            <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
+          </div>
+        )}
+
+        {mode === "etudiant" && (
+          <div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
+            </div>
+            <div style={{marginBottom:24}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+              <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+            </div>
+          <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={async ()=>{
+  try {
+    const cred = await signInWithEmailAndPassword(auth, `${email}@uniclubs.dz`, password);
+    const { getDoc, doc } = await import("firebase/firestore");
+    const snap = await getDoc(doc(db, "etudiants", cred.user.uid));
+    if (!snap.exists()) {
+      await auth.signOut();
+      alert("Votre ancien compte a été supprimé. Veuillez créer un nouveau compte.");
+    }
+  } catch(e) {
+    alert("Numéro étudiant ou mot de passe incorrect !");
+  }
+}}>
+  Se connecter 👨‍🎓
+</button>
+            <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode(null)}>← Retour</button>
+            <div style={{textAlign:"center",marginTop:16,color:"#888",fontSize:14}}>
+                Nouveau étudiant ? <span style={{color:"#2dcb8e",cursor:"pointer",fontWeight:600}} onClick={()=>setMode("inscription")}>Créer un compte</span>
+            </div>
+          </div>
+          
+        )}
+
+        {mode === "inscription" && (
+  <div>
+    <div style={{display:"flex",gap:12,marginBottom:16}}>
+      <div style={{flex:1}}>
+        <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>PRÉNOM</label>
+        <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Ahmed" value={prenom} onChange={e=>setPrenom(e.target.value)}/>
+      </div>
+      <div style={{flex:1}}>
+        <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NOM</label>
+        <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: Hassan" value={nom} onChange={e=>setNom(e.target.value)}/>
+      </div>
+    </div>
+    <div style={{marginBottom:16}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>EMAIL</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: ahmed@gmail.com" value={emailPerso} onChange={e=>setEmailPerso(e.target.value)}/>
+    </div>
+    <div style={{marginBottom:16}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>NUMÉRO ÉTUDIANT</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} placeholder="Ex: 2024123456" value={email} onChange={e=>setEmail(e.target.value)}/>
+    </div>
+    <div style={{marginBottom:24}}>
+      <label style={{fontSize:12,fontWeight:600,color:"#555",display:"block",marginBottom:6}}>MOT DE PASSE</label>
+      <input style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"1.5px solid #e0e0e0",fontSize:14,outline:"none",boxSizing:"border-box"}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)}/>
+    </div>
+    <button style={{width:"100%",padding:"14px",borderRadius:10,background:"linear-gradient(90deg,#2dcb8e,#38f9d7)",color:"white",fontWeight:700,fontSize:15,border:"none",cursor:"pointer"}} onClick={()=>
+      createUserWithEmailAndPassword(auth,`${email}@uniclubs.dz`,password)
+        .then((userCredential) => {
+          setDoc(doc(db,"etudiants",userCredential.user.uid),{
+            nom: nom,
+            prenom: prenom,
+            email: emailPerso,
+            numeroEtudiant: email,
+            createdAt: new Date()
+          });
+          alert("Compte créé avec succès !");
+        })
+        .catch(()=>alert("Erreur lors de la création du compte !"))
+    }>
+      Créer mon compte 👨‍🎓
+    </button>
+    <button style={{width:"100%",marginTop:10,padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"1px solid #e0e0e0",cursor:"pointer"}} onClick={()=>setMode("etudiant")}>← Retour</button>
+  </div>
+)}
+  </div>
+  </div>
+  );
+};
+
+  if(!user) return <Login/>;
+  const isAdmin = user.email=== "nasri@uniclubs.dz";
+    const nav = [
+  {id:"accueil",     label:"Tableau de bord", icon:"📊"},
+  {id:"clubs",       label:"Clubs",           icon:"🏛️"},
+  {id:"evenements",  label:"Événements",      icon:"📅"},
+  {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
+  {id:"inscription", label:"S'inscrire",      icon:"✍️"},
+  {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
+].filter(n => !n.adminOnly || isAdmin);
+  const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
+const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
+const Membres2 = () => <Membres isAdmin={isAdmin}/>;
+const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres2,inscription:Inscription,admin:Admin};
+  const Page = pages[page];
+  return (
+    
     <>
       <style>{CSS}</style>
       <div className="layout">
+
         <aside className="sidebar">
           <div className="brand">UniClubs<span className="brand-sub">Gestion des clubs</span></div>
           <div className="divider"/>
@@ -552,11 +566,13 @@ export default function App() {
           ))}
           <div className="sidebar-bottom">
             <div className="user-card">
-              <div className="avatar">{user.email[0].toUpperCase()}</div>
-              <div>
-                <div className="user-name">{isAdmin ? "Administrateur" : "Étudiant"}</div>
-                <div className="user-role" style={{cursor:"pointer",color:"#f7564a"}} onClick={()=>signOut(auth)}>🚪 Déconnexion</div>
-              </div>
+            <div className="avatar">{user.email[0].toUpperCase()}</div>
+            <div>
+            <div className="user-name">{isAdmin ? "Administrateur" : "Étudiant"}</div>
+              <div className="user-role" style={{cursor:"pointer",color:"#f7564a"}} onClick={()=>signOut(auth)}>🚪 Déconnexion</div>
+            </div>
+              
+              
             </div>
           </div>
         </aside>
