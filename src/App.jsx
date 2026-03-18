@@ -286,30 +286,6 @@ const Evenements = ({isAdmin=false}) => (
     </div>
   );
 };
-
-        {isAdmin && (
-          <div style={{marginTop:32}}>
-            <div className="sec-head"><div className="sec-title">🎓 Étudiants inscrits</div></div>
-            <div className="tbl-wrap">
-              <table>
-                <thead><tr><th>Nom</th><th>Prénom</th><th>N° Étudiant</th><th>Email</th></tr></thead>
-                <tbody>
-                  {etudiants.map(e=>(
-                    <tr key={e.id}>
-                      <td>{e.nom}</td>
-                      <td>{e.prenom}</td>
-                      <td>{e.numeroEtudiant}</td>
-                      <td style={{color:"var(--muted)"}}>{e.email}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
   
   // ── INSCRIPTION
   const Inscription = () => {
