@@ -40,6 +40,7 @@
 .read-the-docs {
   color: #888;
 }
+
 .btn-login {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -52,9 +53,17 @@
 .btn-login:active {
   transform: scale(0.97);
 }
+
 .tbl-wrap {
-  overflow-x: auto;
+  width: 100%;
 }
+
+@media (max-width: 768px) {
+  .tbl-wrap {
+    overflow-x: visible;
+  }
+}
+
 .table-desktop { display: block; }
 .table-mobile  { display: none; }
 
