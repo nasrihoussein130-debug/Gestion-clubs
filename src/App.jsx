@@ -383,27 +383,55 @@ const Membres = ({isAdmin=false}) => {
       </div>
     )}
 
-    <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
-    <div className="tbl-wrap">
-      <table>
-        <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
-        <tbody>
-          {clubs.map(c=>(
-            <tr key={c.id}>
-              <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
-              <td><span className="pill pill-blue">{c.cat}</span></td>
-              <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
-              <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
-              <td style={{display:"flex",gap:6}}>
-                <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none"}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
-                <button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+  <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
+<div className="tbl-wrap">
+
+  {/* Tableau - desktop uniquement */}
+  <div className="table-desktop">
+    <table>
+      <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>
+        {clubs.map(c=>(
+          <tr key={c.id}>
+            <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
+            <td><span className="pill pill-blue">{c.cat}</span></td>
+            <td>{membres.filter(m=>m.club===c.name).length} / {c.max}</td>
+            <td><span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span></td>
+            <td style={{display:"flex",gap:6}}>
+              <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none"}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
+              <button className="btn btn-red btn-sm" onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>Supprimer</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>
+
+  {/* Cartes - mobile uniquement */}
+  <div className="table-mobile">
+    {clubs.map(c=>(
+      <div key={c.id} className="mobile-club-card">
+        <div className="mobile-card-header">
+          <span style={{fontSize:24}}>{c.icon}</span>
+          <div style={{flex:1}}>
+            <div className="mobile-card-name">{c.name}</div>
+            <span className="pill pill-blue">{c.cat}</span>
+          </div>
+          <span className={`pill ${c.members>=c.max?"pill-red":"pill-green"}`}>{c.members>=c.max?"Complet":"Actif"}</span>
+        </div>
+        <div className="mobile-card-info">
+          👥 {membres.filter(m=>m.club===c.name).length} / {c.max} membres
+        </div>
+        <div className="mobile-card-actions">
+          <button className="btn btn-sm" style={{background:"linear-gradient(90deg,#4f6ef7,#a78bfa)",color:"white",border:"none",flex:1}} onClick={()=>setEditClub(c)}>✏️ Modifier</button>
+          <button className="btn btn-red btn-sm" style={{flex:1}} onClick={()=>{if(typeof c.id === "string") deleteDoc(doc(db,"clubs",c.id));else setClubs(p=>p.filter(x=>x.id!==c.id));notify(`Club supprimé.`,"🗑️");}}>🗑️ Supprimer</button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+</div>
+</div>
 );
   const Login = () => {
     const [nom, setNom] = useState("");
