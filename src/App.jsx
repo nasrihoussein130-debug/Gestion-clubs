@@ -138,7 +138,9 @@ export default function App() {
   const [membres, setMembres] = useState([]);
   const [user, setUser] = useState(null);
   const [editClub, setEditClub] = useState(null);
-  const [membreEdit, setMembreEdit] = useState(null); 
+  const [membreEdit, setMembreEdit] = useState(null);
+  const [votes, setVotes] = useState([]);
+const [paiements, setPaiements] = useState([]);
 
 useEffect(() => {
   onAuthStateChanged(auth, (u) => setUser(u));
@@ -160,11 +162,24 @@ useEffect(() => {
   useEffect(() => {
   const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
     const clubsFirebase = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-  setClubs([...CLUBS, ...clubsFirebase]);
+    setClubs([...CLUBS, ...clubsFirebase]);
   });
   return () => unsub();
 }, []);
 
+useEffect(() => {
+  const unsub = onSnapshot(collection(db, "votes"), (snapshot) => {
+    setVotes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+  return () => unsub();
+}, []);
+
+useEffect(() => {
+  const unsub = onSnapshot(collection(db, "paiements"), (snapshot) => {
+    setPaiements(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+  return () => unsub();
+}, []);
   const [search, setSearch] = useState("");
   const [toast, setToast]   = useState(null);
   const [modal, setModal]   = useState(null);
@@ -181,6 +196,138 @@ useEffect(() => {
 
 
   // ── ACCUEIL
+  // ── VOTES
+const Votes = () => {
+  const [message, setMessage] = useState("");
+  const aVote = (clubId) => votes.some(v => v.clubId === clubId && v.etudiantId === user.uid);
+
+  async function voter(clubId, choix) {
+    if (aVote(clubId)) { setMessage("❌ Tu as déjà voté pour ce club."); return; }
+    await addDoc(collection(db, "votes"), {
+      etudiantId: user.uid,
+      clubId,
+      choix,
+      date: new Date(),
+    });
+    setMessage("✅ Vote enregistré !");
+    setTimeout(() => setMessage(""), 3000);
+  }
+
+  return (
+    <div>
+      <div className="topbar">
+        <div><div className="page-title">Votes 🗳️</div><div className="page-sub">Votez pour vos clubs préférés</div></div>
+      </div>
+      {message && <div style={{background: message.startsWith("✅") ? "rgba(45,203,142,0.1)" : "rgba(247,86,74,0.1)", border: `1px solid ${message.startsWith("✅") ? "#2dcb8e" : "#f7564a"}`, borderRadius:12, padding:"12px 18px", marginBottom:20, color: message.startsWith("✅") ? "#1aab73" : "#f7564a", fontWeight:500}}>{message}</div>}
+      <div className="tbl-wrap">
+        <table>
+          <thead><tr><th>Club</th><th>Statut</th><th>Mon vote</th><th>Action</th></tr></thead>
+          <tbody>
+            {clubs.map(c => {
+              const monVote = votes.find(v => v.clubId === c.id && v.etudiantId === user.uid);
+              return (
+                <tr key={c.id}>
+                  <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
+                  <td><span className={`pill ${monVote ? "pill-green" : "pill-blue"}`}>{monVote ? "✅ Voté" : "⏳ En attente"}</span></td>
+                  <td>{monVote ? <span style={{fontWeight:600}}>{monVote.choix === "pour" ? "👍 Pour" : "👎 Contre"}</span> : <span style={{color:"var(--muted)"}}>—</span>}</td>
+                  <td>
+                    {!monVote ? (
+                      <div style={{display:"flex",gap:8}}>
+                        <button className="btn btn-sm btn-primary" onClick={() => voter(c.id, "pour")}>👍 Pour</button>
+                        <button className="btn btn-sm btn-red" onClick={() => voter(c.id, "contre")}>👎 Contre</button>
+                      </div>
+                    ) : (
+                      <span style={{color:"var(--muted)",fontSize:13}}>Déjà voté</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ── PAIEMENTS
+const Paiements = () => {
+  const [selectedClub, setSelectedClub] = useState("");
+  const [montant, setMontant] = useState("");
+  const [message, setMessage] = useState("");
+  const mesPaiements = paiements.filter(p => p.etudiantId === user.uid);
+  const nomClub = (id) => clubs.find(c => c.id === id)?.name || id;
+
+  async function soumettrePaiement() {
+    if (!selectedClub || !montant) { setMessage("❌ Remplis tous les champs."); return; }
+    await addDoc(collection(db, "paiements"), {
+      etudiantId: user.uid,
+      clubId: selectedClub,
+      montant: parseFloat(montant),
+      date: new Date(),
+      statut: "en attente",
+    });
+    setMessage("✅ Paiement soumis !");
+    setSelectedClub(""); setMontant("");
+    setTimeout(() => setMessage(""), 3000);
+  }
+
+  return (
+    <div>
+      <div className="topbar">
+        <div><div className="page-title">Paiements 💰</div><div className="page-sub">Gérez vos cotisations</div></div>
+      </div>
+
+      {/* Formulaire */}
+      <div className="form-box" style={{marginBottom:28}}>
+        <div className="form-box-title">Nouveau paiement</div>
+        {message && <div style={{background: message.startsWith("✅") ? "rgba(45,203,142,0.1)" : "rgba(247,86,74,0.1)", border: `1px solid ${message.startsWith("✅") ? "#2dcb8e" : "#f7564a"}`, borderRadius:10, padding:"10px 14px", marginBottom:16, color: message.startsWith("✅") ? "#1aab73" : "#f7564a", fontWeight:500}}>{message}</div>}
+        <div className="frow">
+          <div className="fgroup">
+            <label className="flabel">Club</label>
+            <select className="fselect" value={selectedClub} onChange={e => setSelectedClub(e.target.value)}>
+              <option value="">-- Sélectionner --</option>
+              {clubs.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+            </select>
+          </div>
+          <div className="fgroup">
+            <label className="flabel">Montant (DJF)</label>
+            <input className="finput" type="number" placeholder="Ex: 2000" value={montant} onChange={e => setMontant(e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-actions">
+          <button className="btn btn-primary" onClick={soumettrePaiement}>💳 Soumettre</button>
+          <button className="btn btn-ghost" onClick={() => { setSelectedClub(""); setMontant(""); }}>Réinitialiser</button>
+        </div>
+      </div>
+
+      {/* Historique */}
+      <div className="sec-head"><div className="sec-title">📋 Mes paiements</div></div>
+      {mesPaiements.length === 0 ? (
+        <div style={{background:"var(--card)",borderRadius:16,padding:32,textAlign:"center",color:"var(--muted)",border:"1px solid var(--border)"}}>
+          <div style={{fontSize:40,marginBottom:12}}>💸</div>
+          <div>Aucun paiement enregistré</div>
+        </div>
+      ) : (
+        <div className="tbl-wrap">
+          <table>
+            <thead><tr><th>Club</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+            <tbody>
+              {mesPaiements.map(p => (
+                <tr key={p.id}>
+                  <td>{nomClub(p.clubId)}</td>
+                  <td><b>{p.montant}</b> DJF</td>
+                  <td><span className={`pill ${p.statut === "payé" ? "pill-green" : "pill-blue"}`}>{p.statut}</span></td>
+                  <td style={{color:"var(--muted)"}}>{p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
   const Accueil = () => (
     <div>
       <div className="topbar">
@@ -383,7 +530,7 @@ const Membres = ({isAdmin=false}) => {
       </div>
     )}
 
- <div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
+<div className="sec-head"><div className="sec-title">🏛️ Gestion des clubs</div></div>
 <div className="tbl-wrap">
 
   {/* Tableau - desktop uniquement */}
@@ -431,6 +578,85 @@ const Membres = ({isAdmin=false}) => {
   </div>
 
 </div>
+</div>
+{/* ── SECTION VOTES ADMIN */}
+<div style={{marginTop:32}}>
+  <div className="sec-head"><div className="sec-title">🗳️ Résultats des votes</div></div>
+  <div className="tbl-wrap">
+    <table>
+      <thead><tr><th>Club</th><th>👍 Pour</th><th>👎 Contre</th><th>Total</th></tr></thead>
+      <tbody>
+        {clubs.map(c => {
+          const votesPour    = votes.filter(v => v.clubId === c.id && v.choix === "pour").length;
+          const votesContre  = votes.filter(v => v.clubId === c.id && v.choix === "contre").length;
+          const total        = votesPour + votesContre;
+          return (
+            <tr key={c.id}>
+              <td><div className="td-flex"><span style={{fontSize:20}}>{c.icon}</span>{c.name}</div></td>
+              <td><span className="pill pill-green">👍 {votesPour}</span></td>
+              <td><span className="pill pill-red">👎 {votesContre}</span></td>
+              <td><b>{total}</b> vote{total > 1 ? "s" : ""}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{/* ── SECTION PAIEMENTS ADMIN */}
+<div style={{marginTop:32}}>
+  <div className="sec-head"><div className="sec-title">💰 Tous les paiements</div></div>
+  <div className="tbl-wrap">
+    <table>
+      <thead><tr><th>Étudiant</th><th>Club</th><th>Montant</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead>
+      <tbody>
+        {paiements.length === 0 ? (
+          <tr><td colSpan={6} style={{textAlign:"center",color:"var(--muted)",padding:24}}>Aucun paiement enregistré</td></tr>
+        ) : paiements.map(p => {
+          const nomClub = clubs.find(c => c.id === p.clubId)?.name || p.clubId;
+          const nomMembre = membres.find(m => m.id === p.etudiantId || m.etudiantId === p.etudiantId)?.nom || p.etudiantId?.slice(0,8) + "...";
+          return (
+            <tr key={p.id}>
+              <td><div className="td-flex"><div className="sm-av" style={{background:"#4f6ef7"}}>{nomMembre[0]?.toUpperCase()}</div>{nomMembre}</div></td>
+              <td>{nomClub}</td>
+              <td><b>{p.montant}</b> DJF</td>
+              <td style={{color:"var(--muted)"}}>{p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}</td>
+              <td>
+                <span className={`pill ${p.statut === "payé" ? "pill-green" : "pill-blue"}`}>
+                  {p.statut}
+                </span>
+              </td>
+              <td>
+                {p.statut !== "payé" ? (
+                  <button
+                    className="btn btn-sm"
+                    style={{background:"rgba(45,203,142,0.15)",color:"#1aab73",border:"1px solid rgba(45,203,142,0.3)"}}
+                    onClick={async () => {
+                      await updateDoc(doc(db, "paiements", p.id), { statut: "payé" });
+                      notify("Paiement confirmé ✅");
+                    }}
+                  >
+                    ✅ Confirmer
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-sm btn-red"
+                    onClick={async () => {
+                      await updateDoc(doc(db, "paiements", p.id), { statut: "en attente" });
+                      notify("Paiement annulé","⚠️");
+                    }}
+                  >
+                    ↩️ Annuler
+                  </button>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
 </div>
 );
   const Login = () => {
@@ -572,12 +798,14 @@ backgroundPosition:"center"}}>
   {id:"evenements",  label:"Événements",      icon:"📅"},
   {id:"membres",     label:"Membres",         icon:"👥", adminOnly: true},
   {id:"inscription", label:"S'inscrire",      icon:"✍️"},
+  {id:"votes",      label:"Votes",      icon:"🗳️"},
+{id:"paiements",  label:"Paiements",  icon:"💰"},
   {id:"admin",       label:"Administration",  icon:"⚙️", adminOnly: true},
 ].filter(n => !n.adminOnly || isAdmin);
   const Clubs2 = () => <Clubs isAdmin={isAdmin}/>;
 const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
 const Membres2 = () => <Membres isAdmin={isAdmin}/>;
-const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres2,inscription:Inscription,admin:Admin};
+const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membres2,inscription:Inscription,votes:Votes,paiements:Paiements,admin:Admin};
   const Page = pages[page];
   return (
     
