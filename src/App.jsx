@@ -121,7 +121,7 @@ tr:hover td { background: #f7f8fc; }
 }
 `;
 
-// Données initiales des clubs (sans membres)
+// Données initiales des clubs
 const INITIAL_CLUBS = [
   { id: 1, name: "Club Informatique", icon: "💻", desc: "Développement, hackathons et projets tech entre passionnés.", max: 50, color: "linear-gradient(90deg,#4f6ef7,#a78bfa)", cat: "Tech", c: "#4f6ef7" },
   { id: 2, name: "Club Robotique", icon: "🤖", desc: "Conception et programmation de robots autonomes.", max: 30, color: "linear-gradient(90deg,#2dcb8e,#38f9d7)", cat: "Tech", c: "#2dcb8e" },
@@ -178,7 +178,8 @@ export default function App() {
   // Membres subscription
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "membres"), (snapshot) => {
-      setMembres(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      const membresData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setMembres(membresData);
     });
     return () => unsub();
   }, []);
@@ -191,13 +192,11 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  // Clubs subscription - CORRIGÉ : pas de duplication
+  // Clubs subscription - CORRIGÉ
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "clubs"), (snapshot) => {
       const clubsFirebase = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Fusionner avec les clubs initiaux pour ceux qui ne sont pas encore en base
       const allClubs = [...INITIAL_CLUBS, ...clubsFirebase];
-      // Éviter les doublons par nom
       const uniqueClubs = allClubs.filter((club, index, self) => 
         index === self.findIndex(c => c.name === club.name)
       );
@@ -226,11 +225,26 @@ export default function App() {
 
   // Helper pour compter les membres par club
   const getMembreCount = (clubId) => {
-    return membres.filter(m => m.clubId === clubId).length;
+    const count = membres.filter(m => {
+      // Support à la fois l'ancien format (club) et le nouveau (clubId)
+      if (m.clubId !== undefined) return m.clubId === clubId;
+      if (m.club !== undefined) {
+        const club = clubs.find(c => c.name === m.club);
+        return club?.id === clubId;
+      }
+      return false;
+    }).length;
+    return count;
   };
 
   // Helper pour trouver un club par ID
   const getClubById = (clubId) => clubs.find(c => c.id === clubId);
+
+  // Helper pour obtenir le nom du club par ID
+  const getClubName = (clubId) => {
+    const club = getClubById(clubId);
+    return club?.name || clubId;
+  };
 
   // Votes Component
   const Votes = () => {
@@ -305,7 +319,6 @@ export default function App() {
     const [montant, setMontant] = useState("");
     const [message, setMessage] = useState("");
     const mesPaiements = paiements.filter(p => p.etudiantId === user?.uid);
-    const nomClub = (id) => getClubById(id)?.name || id;
 
     async function soumettrePaiement() {
       if (!user?.uid) {
@@ -372,7 +385,7 @@ export default function App() {
               <tbody>
                 {mesPaiements.map(p => (
                   <tr key={p.id}>
-                    <td>{nomClub(p.clubId)}</td>
+                    <td>{getClubName(p.clubId)}</td>
                     <td><b>{p.montant}</b> DJF</td>
                     <td><span className={`pill ${p.statut === "payé" ? "pill-green" : "pill-blue"}`}>{p.statut}</span></td>
                     <td style={{ color: "var(--muted)" }}>{p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}</td>
@@ -414,14 +427,13 @@ export default function App() {
       </div>
       <div className="events-list">
         {events.slice(0, 3).map(ev => {
-          const club = getClubById(ev.clubId);
           return (
             <div key={ev.id} className="ev-row">
               <div className="ev-date"><div className="ev-day">{ev.day}</div><div className="ev-month">{ev.month}</div></div>
               <div className="ev-info">
                 <div className="ev-name">{ev.title}</div>
                 <div className="ev-meta">
-                  <span className="ev-tag">{club?.name || ev.clubId}</span>
+                  <span className="ev-tag">{getClubName(ev.clubId)}</span>
                   📍 {ev.lieu}
                 </div>
               </div>
@@ -433,7 +445,7 @@ export default function App() {
     </div>
   );
 
-  // Clubs Component
+  // Clubs Component - CORRIGÉ avec getMembreCount
   const Clubs = ({ isAdmin = false }) => {
     const fil = clubs.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
     return (
@@ -484,14 +496,13 @@ export default function App() {
       </div>
       <div className="events-list">
         {events.map(ev => {
-          const club = getClubById(ev.clubId);
           return (
             <div key={ev.id} className="ev-row">
               <div className="ev-date"><div className="ev-day">{ev.day}</div><div className="ev-month">{ev.month}</div></div>
               <div className="ev-info">
                 <div className="ev-name">{ev.title}</div>
                 <div className="ev-meta">
-                  <span className="ev-tag">{club?.name || ev.clubId}</span>
+                  <span className="ev-tag">{getClubName(ev.clubId)}</span>
                   📍 {ev.lieu}
                 </div>
               </div>
@@ -530,18 +541,17 @@ export default function App() {
           <input className="search-in" placeholder="🔍 Rechercher un membre..." value={searchMembre} onChange={e => setSearchMembre(e.target.value)} />
         </div>
         <div className="tbl-wrap">
-          <table>
+          表格
             <thead>
               <tr><th>Nom</th><th>Email</th><th>Club</th><th>Rôle</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {fil.map(m => {
-                const club = getClubById(m.clubId);
                 return (
                   <tr key={m.id}>
                     <td><div className="td-flex"><div className="sm-av" style={{ background: m.c || "#4f6ef7" }}>{(m.nom || "?")[0]}</div>{m.nom}</div></td>
                     <td style={{ color: "var(--muted)" }}>{m.email}</td>
-                    <td><span className="pill pill-blue">{club?.name || m.clubId}</span></td>
+                    <td><span className="pill pill-blue">{getClubName(m.clubId)}</span></td>
                     <td>{m.role}</td>
                     <td>
                       {isAdmin && (
@@ -559,7 +569,7 @@ export default function App() {
                 );
               })}
             </tbody>
-          </table>
+          表格
         </div>
       </div>
     );
@@ -590,6 +600,11 @@ export default function App() {
           <div className="form-actions">
             <button className="btn btn-primary" onClick={() => {
               if (localForm.prenom && localForm.email && localForm.clubId) {
+                const club = getClubById(localForm.clubId);
+                if (club && getMembreCount(club.id) >= club.max) {
+                  notify("Ce club est complet !", "⚠️");
+                  return;
+                }
                 addDoc(collection(db, "membres"), {
                   nom: `${localForm.prenom} ${localForm.nom}`,
                   email: localForm.email,
@@ -598,7 +613,6 @@ export default function App() {
                   c: "#4f6ef7",
                   dateInscription: new Date()
                 });
-                const club = getClubById(localForm.clubId);
                 notify(`Inscription au ${club?.name || "club"} envoyée !`);
                 setLocalForm({ prenom: "", nom: "", email: "", clubId: "", motiv: "" });
               } else notify("Remplissez les champs obligatoires.", "⚠️");
@@ -772,13 +786,12 @@ export default function App() {
                 {paiements.length === 0 ? (
                   <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--muted)", padding: 24 }}>Aucun paiement enregistré</td></tr>
                 ) : paiements.map(p => {
-                  const club = getClubById(p.clubId);
                   const membre = membres.find(m => m.id === p.etudiantId || m.etudiantId === p.etudiantId);
                   const nomMembre = membre?.nom || p.etudiantId?.slice(0, 8) + "...";
                   return (
                     <tr key={p.id}>
                       <td><div className="td-flex"><div className="sm-av" style={{ background: "#4f6ef7" }}>{nomMembre[0]?.toUpperCase()}</div>{nomMembre}</div></td>
-                      <td>{club?.name || p.clubId}</td>
+                      <td>{getClubName(p.clubId)}</td>
                       <td><b>{p.montant}</b> DJF</td>
                       <td style={{ color: "var(--muted)" }}>{p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}</td>
                       <td><span className={`pill ${p.statut === "payé" ? "pill-green" : "pill-blue"}`}>{p.statut}</span></td>
@@ -826,8 +839,8 @@ export default function App() {
 
           {!mode && (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <button className="btn-login" style={{ padding: "14px", borderRadius: 10, background: "linear-gradient(90deg,#4f6ef7,#a78bfa)", color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }} onClick={() => setMode("admin")}>🔐 Connexion Administrateur</button>
-              <button className="btn-login" style={{ padding: "14px", borderRadius: 10, background: "linear-gradient(90deg,#2dcb8e,#38f9d7)", color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }} onClick={() => setMode("etudiant")}>👨‍🎓 Connexion Étudiant</button>
+              <button style={{ padding: "14px", borderRadius: 10, background: "linear-gradient(90deg,#4f6ef7,#a78bfa)", color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }} onClick={() => setMode("admin")}>🔐 Connexion Administrateur</button>
+              <button style={{ padding: "14px", borderRadius: 10, background: "linear-gradient(90deg,#2dcb8e,#38f9d7)", color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }} onClick={() => setMode("etudiant")}>👨‍🎓 Connexion Étudiant</button>
             </div>
           )}
 
