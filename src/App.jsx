@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, setDoc,updateDoc } from 'firebase/firestore';
 import { useState, useEffect } from "react";
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -138,6 +138,7 @@ export default function App() {
   const [membres, setMembres] = useState([]);
   const [user, setUser] = useState(null);
   const [editClub, setEditClub] = useState(null);
+  const [membreEdit, setMembreEdit] = useState(null); 
 
 useEffect(() => {
   onAuthStateChanged(auth, (u) => setUser(u));
@@ -250,12 +251,12 @@ const Evenements = ({isAdmin=false}) => (
   );
 
   // ── MEMBRES
- const Membres = ({isAdmin=false}) => {
+const Membres = ({isAdmin=false}) => {
   const [searchMembre, setSearchMembre] = useState("");
   const [etudiants, setEtudiants] = useState([]);
   
   useEffect(()=>{
-    const unsub = onSnapshot(collection(db,"etudiants"),(snapshot)=>{
+  const unsub = onSnapshot(collection(db,"membres"),(snapshot)=>{
       setEtudiants(snapshot.docs.map(d=>({id:d.id,...d.data()})));
     });
     return ()=>unsub();
@@ -277,7 +278,7 @@ const Evenements = ({isAdmin=false}) => (
                 <td style={{color:"var(--muted)"}}>{m.email}</td>
                 <td><span className="pill pill-blue">{m.club}</span></td>
                 <td>{m.role}</td>
-                <td>{isAdmin && <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"etudiants",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button>}</td>
+                <td>{isAdmin && <><button className="btn btn-primary btn-sm" onClick={()=>{setMembreEdit(m);setForm({prenom:m.nom,email:m.email,club:m.club,role:m.role});setModal("membre");}}>Modifier</button> <button className="btn btn-red btn-sm" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.","🗑️");}}>Supprimer</button></>}</td>
               </tr>
             ))}
           </tbody>
@@ -630,32 +631,44 @@ const pages = {accueil:Accueil,clubs:Clubs2,evenements:Evenements2,membres:Membr
         )}
 
         {/* MODAL AJOUTER MEMBRE */}
-        {modal==="membre" && (
-          <div className="overlay" onClick={()=>setModal(null)}>
-            <div className="modal" onClick={e=>e.stopPropagation()}>
-              <div className="modal-head"><div className="modal-ttl">Ajouter un membre</div><button className="close-btn" onClick={()=>setModal(null)}>✕</button></div>
-              <div className="fgroup"><label className="flabel">Nom complet</label><input className="finput" placeholder="Prénom Nom" value={form.prenom} onChange={e=>setForm({...form,prenom:e.target.value})}/></div>
-              <div className="fgroup"><label className="flabel">Email</label><input className="finput" type="email" placeholder="email@univ.dz" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></div>
-              <div className="fgroup"><label className="flabel">Club</label>
-                <select className="fselect" value={form.club} onChange={e=>setForm({...form,club:e.target.value})}>
-                  <option value="">-- Choisir --</option>
-                  {clubs.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
-              <div className="fgroup"><label className="flabel">Rôle</label>
-                <select className="fselect" value={form.role} onChange={e=>setForm({...form,role:e.target.value})}>
-                  {["Membre","Président","Vice-Président","Trésorier","Secrétaire"].map(r=><option key={r}>{r}</option>)}
-                </select>
-              </div>
-              <div className="form-actions">
-                <button className="btn btn-primary" onClick={()=>{
-                  if(form.prenom&&form.email&&form.club){addDoc(collection(db,"membres"),{nom:form.prenom,email:form.email,club:form.club,role:form.role,c:"#4f6ef7"});setModal(null);notify("Membre ajouté !");setForm({prenom:"",nom:"",email:"",club:"",role:"Membre",motiv:""});}else notify("Remplissez tous les champs.","⚠️");
-                }}>Ajouter</button>
-                <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
-              </div>
-            </div>
-          </div>
-        )}
+      {modal==="membre" && (
+  <div className="overlay" onClick={()=>{setModal(null);setMembreEdit(null);}}>
+    <div className="modal" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head">
+        <div className="modal-ttl">{membreEdit ? "Modifier un membre" : "Ajouter un membre"}</div>
+        <button className="close-btn" onClick={()=>{setModal(null);setMembreEdit(null);}}>✕</button>
+      </div>
+      <div className="fgroup"><label className="flabel">Nom complet</label><input className="finput" placeholder="Prénom Nom" value={form.prenom} onChange={e=>setForm({...form,prenom:e.target.value})}/></div>
+      <div className="fgroup"><label className="flabel">Email</label><input className="finput" type="email" placeholder="email@univ.dz" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></div>
+      <div className="fgroup"><label className="flabel">Club</label>
+        <select className="fselect" value={form.club} onChange={e=>setForm({...form,club:e.target.value})}>
+          <option value="">-- Choisir --</option>
+          {clubs.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+      </div>
+      <div className="fgroup"><label className="flabel">Rôle</label>
+        <select className="fselect" value={form.role} onChange={e=>setForm({...form,role:e.target.value})}>
+          {["Membre","Président","Vice-Président","Trésorier","Secrétaire"].map(r=><option key={r}>{r}</option>)}
+        </select>
+      </div>
+      <div className="form-actions">
+        <button className="btn btn-primary" onClick={()=>{
+          if(form.prenom&&form.email&&form.club){
+            if(membreEdit){
+              updateDoc(doc(db,"membres",membreEdit.id),{nom:form.prenom,email:form.email,club:form.club,role:form.role});
+              notify("Membre modifié ✅");
+            } else {
+              addDoc(collection(db,"membres"),{nom:form.prenom,email:form.email,club:form.club,role:form.role,c:"#4f6ef7"});
+              notify("Membre ajouté !");
+            }
+            setModal(null);setMembreEdit(null);setForm({prenom:"",nom:"",email:"",club:"",role:"Membre",motiv:""});
+          } else notify("Remplissez tous les champs.","⚠️");
+        }}>{membreEdit ? "Enregistrer" : "Ajouter"}</button>
+        <button className="btn btn-ghost" onClick={()=>{setModal(null);setMembreEdit(null);}}>Annuler</button>
+      </div>
+    </div>
+  </div>
+)}
 
       </div>
     </>
