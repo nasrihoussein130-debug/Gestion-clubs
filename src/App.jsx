@@ -641,14 +641,75 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
   .adm-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  .sidebar { width: 100%; min-height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
-  .main { margin-left: 0; padding: 20px 16px; }
+
+  /* SIDEBAR → bottom nav bar fixe */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: auto; bottom: 0; left: 0;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding: 0;
+    overflow: visible;
+  }
+  .brand-area, .sidebar-footer { display: none; }
+  .nav-section {
+    display: flex; flex-direction: row;
+    overflow-x: auto; padding: 0; width: 100%; gap: 0;
+  }
+  .nav-label { display: none; }
+  .nav-item {
+    flex-direction: column; gap: 3px;
+    padding: 8px 10px; font-size: 10px;
+    border-radius: 0; border: none;
+    min-width: 58px; text-align: center;
+    margin-bottom: 0; justify-content: center;
+  }
+  .nav-item.active::before { display: none; }
+  .nav-item.active { border-top: 2px solid var(--gold); border-radius: 0; }
+  .nav-icon { font-size: 18px; width: auto; }
+
+  /* MAIN → espace pour la bottom nav */
   .layout { flex-direction: column; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .main { margin-left: 0; padding: 20px 16px 90px; min-height: 100vh; }
+
+  /* GRILLES */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
   .clubs-grid { grid-template-columns: 1fr; }
   .frow { grid-template-columns: 1fr; }
-  .page-title { font-size: 24px; }
-  .page-header { flex-direction: column; gap: 16px; }
+
+  /* TITRES */
+  .page-title { font-size: 22px; }
+  .page-header { flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .stat-value { font-size: 28px; }
+
+  /* TABLEAUX → scroll horizontal */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 500px; }
+
+  /* MODAL */
+  .modal { max-width: calc(100% - 24px); margin: 0 12px; padding: 22px 18px; }
+
+  /* FORMULAIRE */
+  .form-card { max-width: 100%; padding: 20px 16px; }
+  .form-actions { flex-direction: column; }
+  .form-actions .btn { justify-content: center; }
+
+  /* LOGIN CARD */
+  .login-card { width: calc(100% - 32px); padding: 32px 24px; }
+
+  /* TOAST au-dessus de la bottom nav */
+  .toast { bottom: 80px; right: 16px; left: 16px; max-width: none; }
+
+  /* EVENTS */
+  .ev-row { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
+}
+
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .nav-item { min-width: 50px; font-size: 9px; }
 }
 `;
 
