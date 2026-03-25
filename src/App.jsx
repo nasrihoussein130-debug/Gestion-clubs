@@ -632,17 +632,9 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
 }
 .back-btn:hover { color: var(--text); }
 
-/* ── RESPONSIVE */
-@media (max-width: 1100px) {
-  .clubs-grid { grid-template-columns: repeat(2, 1fr); }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 900px) {
-  .adm-grid { grid-template-columns: 1fr; }
-}
 @media (max-width: 768px) {
 
-  /* SIDEBAR → bottom nav bar fixe */
+  /* SIDEBAR → bottom nav */
   .sidebar {
     width: 100%;
     height: auto;
@@ -654,62 +646,141 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
     padding: 0;
     overflow: visible;
   }
-  .brand-area, .sidebar-footer { display: none; }
+
+  .brand-area { display: none; }
+
+  /* 🔥 IMPORTANT : ON NE CACHE PLUS LE FOOTER */
+  .sidebar-footer {
+    display: flex;
+    position: fixed;
+    bottom: 70px; /* au-dessus de la navbar */
+    right: 12px;
+    z-index: 300;
+  }
+
+  .user-pill {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .u-name, .u-role {
+    display: none; /* plus compact sur mobile */
+  }
+
+  /* NAVIGATION */
   .nav-section {
-    display: flex; flex-direction: row;
-    overflow-x: auto; padding: 0; width: 100%; gap: 0;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0;
+    width: 100%;
+    gap: 0;
   }
+
   .nav-label { display: none; }
+
   .nav-item {
-    flex-direction: column; gap: 3px;
-    padding: 8px 10px; font-size: 10px;
-    border-radius: 0; border: none;
-    min-width: 58px; text-align: center;
-    margin-bottom: 0; justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 10px;
+    font-size: 10px;
+    border-radius: 0;
+    border: none;
+    min-width: 58px;
+    text-align: center;
+    margin-bottom: 0;
+    justify-content: center;
   }
+
   .nav-item.active::before { display: none; }
-  .nav-item.active { border-top: 2px solid var(--gold); border-radius: 0; }
+
+  .nav-item.active {
+    border-top: 2px solid var(--gold);
+    border-radius: 0;
+  }
+
   .nav-icon { font-size: 18px; width: auto; }
 
-  /* MAIN → espace pour la bottom nav */
+  /* MAIN */
   .layout { flex-direction: column; }
-  .main { margin-left: 0; padding: 20px 16px 90px; min-height: 100vh; }
 
-  /* GRILLES */
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .main {
+    margin-left: 0;
+    padding: 20px 16px 90px;
+    min-height: 100vh;
+  }
+
+  /* GRIDS */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
   .clubs-grid { grid-template-columns: 1fr; }
+
   .frow { grid-template-columns: 1fr; }
 
-  /* TITRES */
+  /* TEXT */
   .page-title { font-size: 22px; }
-  .page-header { flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
   .stat-value { font-size: 28px; }
 
-  /* TABLEAUX → scroll horizontal */
-  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* TABLE */
+  .tbl-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   table { min-width: 500px; }
 
   /* MODAL */
-  .modal { max-width: calc(100% - 24px); margin: 0 12px; padding: 22px 18px; }
+  .modal {
+    max-width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 22px 18px;
+  }
 
-  /* FORMULAIRE */
-  .form-card { max-width: 100%; padding: 20px 16px; }
-  .form-actions { flex-direction: column; }
-  .form-actions .btn { justify-content: center; }
+  /* FORM */
+  .form-card {
+    max-width: 100%;
+    padding: 20px 16px;
+  }
 
-  /* LOGIN CARD */
-  .login-card { width: calc(100% - 32px); padding: 32px 24px; }
+  .form-actions {
+    flex-direction: column;
+  }
 
-  /* TOAST au-dessus de la bottom nav */
-  .toast { bottom: 80px; right: 16px; left: 16px; max-width: none; }
+  .form-actions .btn {
+    justify-content: center;
+  }
+
+  /* LOGIN */
+  .login-card {
+    width: calc(100% - 32px);
+    padding: 32px 24px;
+  }
+
+  /* TOAST */
+  .toast {
+    bottom: 80px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+  }
 
   /* EVENTS */
-  .ev-row { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
-}
-
-@media (max-width: 400px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .nav-item { min-width: 50px; font-size: 9px; }
+  .ev-row {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    gap: 10px;
+  }
 }
 `;
 
