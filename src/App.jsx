@@ -651,12 +651,21 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
 
   /* 🔥 IMPORTANT : ON NE CACHE PLUS LE FOOTER */
   .sidebar-footer {
-    display: flex;
-    position: fixed;
-    bottom: 70px; /* au-dessus de la navbar */
-    right: 12px;
-    z-index: 300;
-  }
+  display: flex;
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  justify-content: center;
+  z-index: 300;
+}
+
+.user-pill {
+  width: 100%;
+  max-width: 400px;
+  justify-content: space-between;
+}
 
   .user-pill {
     padding: 8px 10px;
