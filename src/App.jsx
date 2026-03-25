@@ -791,35 +791,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
     gap: 10px;
   }
 }
-  /* ✨ Animation bouton logout */
-.user-pill {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.user-pill::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.15), transparent);
-  opacity: 0;
-  transition: 0.4s;
-}
-
-.user-pill:hover::before {
-  opacity: 1;
-  transform: translateX(100%);
-}
-
-.u-logout {
-  transition: all 0.25s ease;
-}
-
-.u-logout:hover {
-  transform: rotate(180deg) scale(1.2);
-  color: #ff4d6d;
-}
+  
 `;
 
 
