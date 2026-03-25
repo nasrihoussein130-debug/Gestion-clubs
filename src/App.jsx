@@ -14,8 +14,8 @@ const CSS = `
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #07080f;
-  --bg2:      #0d0f1c;
+  --bg:       #020b18;
+  --bg2:      #051529;
   --surface:  rgba(255,255,255,0.04);
   --glass:    rgba(255,255,255,0.06);
   --glass2:   rgba(255,255,255,0.09);
@@ -432,7 +432,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
   background: rgba(255,255,255,0.06);
 }
 .finput::placeholder, .ftextarea::placeholder { color: var(--text3); }
-.fselect option { background: #1a1d2e; color: var(--text); }
+.fselect option { background: #041020; color: var(--text); }
 .ftextarea { resize: vertical; min-height: 90px; }
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-actions { display: flex; gap: 10px; margin-top: 24px; }
@@ -466,12 +466,12 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
 /* ── MODAL / OVERLAY */
 .overlay {
   position: fixed; inset: 0;
-  background: rgba(7,8,15,0.8); backdrop-filter: blur(12px);
+  background: rgba(2,11,24,0.8); backdrop-filter: blur(12px);
   z-index: 200; display: flex; align-items: center; justify-content: center;
   animation: fadeIn 0.2s ease;
 }
 .modal {
-  background: #10121f; border: 1px solid var(--border2);
+  background: #041020; border: 1px solid var(--border2);
   border-radius: var(--r-xl); padding: 30px;
   width: 100%; max-width: 460px;
   box-shadow: var(--shadow-lg);
@@ -497,7 +497,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
 /* ── TOAST */
 .toast {
   position: fixed; bottom: 28px; right: 28px;
-  background: #10121f; border: 1px solid var(--border2);
+  background: #041020; border: 1px solid var(--border2);
   color: var(--text); padding: 13px 20px;
   border-radius: var(--r-md); font-size: 13px;
   z-index: 999; box-shadow: var(--shadow-lg);
@@ -538,7 +538,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
   letter-spacing: -10px;
 }
 .login-card {
-  background: rgba(13,15,28,0.95); border: 1px solid var(--border2);
+  background: rgba(2,15,35,0.95); border: 1px solid var(--border2);
   border-radius: var(--r-xl); padding: 44px 40px;
   width: 400px; z-index: 2;
   box-shadow: var(--shadow-lg), 0 0 80px rgba(232,201,122,0.04);
@@ -651,6 +651,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
   .page-header { flex-direction: column; gap: 16px; }
 }
 `;
+
 
 /* ═══════════════════════════════════════════════════════════════
    STATIC DATA
