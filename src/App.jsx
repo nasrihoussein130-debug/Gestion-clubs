@@ -636,7 +636,7 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 
   .sidebar {
     width: 100%;
-    height: auto;
+    height: 48px;
     position: fixed;
     top: auto; bottom: 0; left: 0;
     flex-direction: row;
