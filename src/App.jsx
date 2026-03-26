@@ -634,19 +634,17 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 
 @media (max-width: 768px) {
 
-.sidebar {
-  width: 100%;
-  height: 52px;
-  position: fixed;
-  top: auto; bottom: 0; left: 0;
-  flex-direction: row;
-  align-items: stretch;
-  border-right: none;
-  border-top: 1px solid rgba(255,193,7,0.15);
-  padding: 0;
-  overflow: visible;
-  z-index: 100;
-}
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: auto; bottom: 0; left: 0;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid rgba(255,193,7,0.15);
+    padding: 0;
+    overflow: visible;
+  }
 
   .brand-area { display: none; }
 
@@ -655,7 +653,7 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
     position: fixed;
     bottom: 70px;
     right: 12px;
-    z-index: 100;
+    z-index: 150;
   }
 
   .user-pill { padding: 8px 10px; gap: 8px; }
