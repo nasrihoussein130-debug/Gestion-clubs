@@ -634,66 +634,117 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 
 @media (max-width: 768px) {
 
+  /* SIDEBAR → barre du bas */
   .sidebar {
     width: 100%;
-    height: auto;
+    height: 64px;
     position: fixed;
     top: auto; bottom: 0; left: 0;
     flex-direction: row;
+    align-items: stretch;
     border-right: none;
     border-top: 1px solid rgba(255,193,7,0.15);
     padding: 0;
     overflow: visible;
+    z-index: 100;
   }
 
+  .sidebar::before { display: none; }
   .brand-area { display: none; }
 
+  /* User pill flottant en bas à droite */
   .sidebar-footer {
     display: flex;
     position: fixed;
-    bottom: 70px;
+    bottom: 72px;
     right: 12px;
     z-index: 300;
+    border-top: none;
+    padding: 0;
   }
 
   .user-pill { padding: 8px 10px; gap: 8px; }
   .u-name, .u-role { display: none; }
 
+  /* NAV en ligne horizontale */
   .nav-section {
-    display: flex; flex-direction: row;
-    overflow-x: auto; padding: 0; width: 100%; gap: 0;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+    width: 100%;
+    gap: 0;
+    align-items: stretch;
+    flex: 1;
   }
 
   .nav-label { display: none; }
 
   .nav-item {
-    flex-direction: column; gap: 3px;
-    padding: 8px 10px; font-size: 10px;
-    border-radius: 0; border: none;
-    min-width: 58px; text-align: center;
-    margin-bottom: 0; justify-content: center;
+    flex-direction: column !important;
+    gap: 3px;
+    padding: 8px 6px;
+    font-size: 10px;
+    border-radius: 0;
+    border: none !important;
+    min-width: 60px;
+    flex: 1;
+    text-align: center;
+    margin-bottom: 0;
+    justify-content: center;
+    align-items: center;
   }
 
   .nav-item.active::before { display: none; }
-  .nav-item.active { border-top: 2px solid var(--gold); border-radius: 0; }
+
+  .nav-item.active {
+    border-top: 2px solid var(--gold) !important;
+    background: rgba(255,193,7,0.08);
+    border-radius: 0;
+  }
+
   .nav-icon { font-size: 18px; width: auto; }
 
+  /* MAIN */
   .layout { flex-direction: column; }
-  .main { margin-left: 0; padding: 20px 16px 90px; min-height: 100vh; }
+
+  .main {
+    margin-left: 0 !important;
+    padding: 20px 16px 80px;
+    min-height: 100vh;
+  }
+
+  /* GRIDS */
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .clubs-grid { grid-template-columns: 1fr; }
+  .clubs-grid { grid-template-columns: 1fr !important; }
   .frow { grid-template-columns: 1fr; }
+  .adm-grid { grid-template-columns: 1fr; }
+
+  /* TEXTE */
   .page-title { font-size: 22px; }
   .page-header { flex-direction: column; gap: 12px; margin-bottom: 20px; }
   .stat-value { font-size: 28px; }
+
+  /* TABLE */
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { min-width: 500px; }
+
+  /* MODAL */
   .modal { max-width: calc(100% - 24px); margin: 0 12px; padding: 22px 18px; }
+
+  /* FORM */
   .form-card { max-width: 100%; padding: 20px 16px; }
   .form-actions { flex-direction: column; }
   .form-actions .btn { justify-content: center; }
+
+  /* LOGIN */
   .login-card { width: calc(100% - 32px); padding: 32px 24px; }
+
+  /* TOAST */
   .toast { bottom: 80px; right: 16px; left: 16px; max-width: none; }
+
+  /* EVENTS */
   .ev-row { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
 }
 `;
