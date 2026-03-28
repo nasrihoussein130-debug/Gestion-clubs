@@ -6,7 +6,6 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWith
 
 /* ═══════════════════════════════════════════════════════════════
    DESIGN SYSTEM — Obsidian Glass aesthetic
-   Dark luxury with luminous accents, frosted glass, silk motion
 ═══════════════════════════════════════════════════════════════ */
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -53,16 +52,13 @@ body {
   overflow-x: hidden;
 }
 
-/* ── SCROLLBAR */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-/* ── LAYOUT */
 .layout { display: flex; min-height: 100vh; position: relative; }
 
-/* ── SIDEBAR */
 .sidebar {
   width: 260px; height: 100vh;
   background: var(--bg2);
@@ -168,7 +164,6 @@ body {
 }
 .u-logout:hover { background: rgba(255,107,138,0.1); }
 
-/* ── MAIN */
 .main {
   margin-left: 260px; flex: 1; padding: 40px 48px;
   min-height: 100vh;
@@ -178,7 +173,6 @@ body {
     var(--bg);
 }
 
-/* ── PAGE HEADER */
 .page-header {
   display: flex; justify-content: space-between; align-items: flex-start;
   margin-bottom: 36px;
@@ -194,7 +188,6 @@ body {
 }
 .page-sub { font-size: 14px; color: var(--text2); margin-top: 6px; }
 
-/* ── BUTTONS */
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 20px; border-radius: var(--r-sm);
@@ -226,7 +219,6 @@ body {
 .btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
 .btn-xs { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
 
-/* ── STAT CARDS */
 .stats-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 16px; margin-bottom: 36px;
@@ -238,12 +230,6 @@ body {
   transition: all 0.25s;
 }
 .stat-card:hover { border-color: rgba(255,193,7,0.2); transform: translateY(-2px); box-shadow: var(--shadow-card); }
-.stat-card::after {
-  content: attr(data-glyph);
-  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-  font-size: 48px; opacity: 0.06; pointer-events: none;
-  font-family: 'Playfair Display', serif;
-}
 .stat-accent {
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: 9px;
@@ -263,7 +249,6 @@ body {
   display: flex; align-items: center; gap: 4px;
 }
 
-/* ── CARDS GENERAL */
 .card {
   background: var(--glass); border: 1px solid var(--border);
   border-radius: var(--r-lg);
@@ -279,7 +264,6 @@ body {
   font-size: 18px; font-weight: 600; color: var(--text);
 }
 
-/* ── CLUBS GRID */
 .clubs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .club-card {
   background: var(--glass); border: 1px solid var(--border);
@@ -312,7 +296,6 @@ body {
 .club-count b { color: var(--text2); }
 .club-actions { display: flex; gap: 8px; }
 
-/* ── PILLS/BADGES */
 .badge {
   padding: 3px 10px; border-radius: 99px;
   font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
@@ -324,7 +307,6 @@ body {
 .badge-violet { background: rgba(155,127,232,0.1); color: var(--violet); border: 1px solid rgba(155,127,232,0.15); }
 .badge-sky { background: rgba(96,175,240,0.1); color: var(--sky); border: 1px solid rgba(96,175,240,0.15); }
 
-/* ── EVENTS */
 .events-list { display: flex; flex-direction: column; gap: 10px; }
 .ev-row {
   background: var(--glass); border: 1px solid var(--border);
@@ -357,7 +339,6 @@ body {
   padding: 2px 9px; border-radius: 99px; font-size: 11px;
 }
 
-/* ── TABLE */
 .tbl-wrap {
   background: var(--glass); border: 1px solid var(--border);
   border-radius: var(--r-lg); overflow: hidden;
@@ -386,7 +367,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0;
 }
 
-/* ── SEARCH */
 .search-bar {
   position: relative; margin-bottom: 20px;
 }
@@ -405,7 +385,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   pointer-events: none; opacity: 0.5;
 }
 
-/* ── FORMS */
 .form-card {
   background: var(--glass); border: 1px solid var(--border);
   border-radius: var(--r-xl); padding: 32px; max-width: 580px;
@@ -437,7 +416,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-actions { display: flex; gap: 10px; margin-top: 24px; }
 
-/* ── ADMIN */
 .adm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
 .adm-card {
   background: var(--glass); border: 1px solid var(--border);
@@ -463,7 +441,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   transition: width 0.6s cubic-bezier(.22,.61,.36,1);
 }
 
-/* ── MODAL / OVERLAY */
 .overlay {
   position: fixed; inset: 0;
   background: rgba(10,22,40,0.85); backdrop-filter: blur(12px);
@@ -494,7 +471,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 }
 .close-btn:hover { color: var(--rose); border-color: rgba(255,107,138,0.3); }
 
-/* ── TOAST */
 .toast {
   position: fixed; bottom: 28px; right: 28px;
   background: #0d1f3c; border: 1px solid rgba(255,193,7,0.2);
@@ -511,7 +487,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   box-shadow: 0 0 8px var(--gold);
 }
 
-/* ── EMPTY STATE */
 .empty-state {
   text-align: center; padding: 56px 32px;
   background: var(--glass); border: 1px solid var(--border);
@@ -521,7 +496,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 .empty-text { font-size: 15px; color: var(--text2); margin-bottom: 6px; }
 .empty-sub { font-size: 13px; color: var(--text3); }
 
-/* ── LOGIN */
 .login-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background:
@@ -544,9 +518,7 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   box-shadow: var(--shadow-lg), 0 0 80px rgba(255,193,7,0.06);
   animation: slideUp 0.4s cubic-bezier(.22,.61,.36,1);
 }
-.login-logo {
-  text-align: center; margin-bottom: 36px;
-}
+.login-logo { text-align: center; margin-bottom: 36px; }
 .login-icon {
   width: 60px; height: 60px; border-radius: 16px;
   background: linear-gradient(135deg, #FFC107, #e6a800);
@@ -594,7 +566,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 }
 .login-link:hover { color: var(--gold2); }
 
-/* ── ANIMATIONS */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp {
   from { transform: translateY(16px); opacity: 0; }
@@ -604,7 +575,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
   0%, 100% { opacity: 1; } 50% { opacity: 0.5; }
 }
 
-/* ── VOTES PAGE */
 .vote-row {
   background: var(--glass); border: 1px solid var(--border);
   border-radius: var(--r-md); padding: 16px 20px;
@@ -613,7 +583,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 }
 .vote-row:hover { border-color: rgba(255,193,7,0.2); }
 
-/* ── ALERT */
 .alert {
   border-radius: var(--r-sm); padding: 12px 16px;
   font-size: 13px; font-weight: 500; margin-bottom: 18px;
@@ -622,7 +591,6 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 .alert-success { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.2); color: var(--gold); }
 .alert-error   { background: rgba(255,107,138,0.1); border: 1px solid rgba(255,107,138,0.2); color: var(--rose); }
 
-/* ── BACK BTN */
 .back-btn {
   display: inline-flex; align-items: center; gap: 7px;
   background: none; border: none; color: var(--text3);
@@ -633,39 +601,25 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 .back-btn:hover { color: var(--gold); }
 
 @media (max-width: 768px) {
-
   .sidebar {
-    width: 100%;
-    height: 100px;
-    position: fixed;
-    top: auto; bottom: 0; left: 0;
+    width: 100%; height: 100px;
+    position: fixed; top: auto; bottom: 0; left: 0;
     flex-direction: row;
-    border-right: none;
-    border-top: 1px solid rgba(255,193,7,0.15);
-    padding: 0;
-    overflow: visible;
+    border-right: none; border-top: 1px solid rgba(255,193,7,0.15);
+    padding: 0; overflow: visible;
   }
-
   .brand-area { display: none; }
-
   .sidebar-footer {
-    display: flex;
-    position: fixed;
-    bottom: 70px;
-    right: 12px;
-    z-index: 150;
+    display: flex; position: fixed;
+    bottom: 70px; right: 12px; z-index: 150;
   }
-
   .user-pill { padding: 8px 10px; gap: 8px; }
   .u-name, .u-role { display: none; }
-
   .nav-section {
     display: flex; flex-direction: row;
     overflow-x: auto; padding: 0; width: 100%; gap: 0;
   }
-
   .nav-label { display: none; }
-
   .nav-item {
     flex-direction: column; gap: 3px;
     padding: 8px 10px; font-size: 10px;
@@ -673,11 +627,9 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
     min-width: 58px; text-align: center;
     margin-bottom: 0; justify-content: center;
   }
-
   .nav-item.active::before { display: none; }
   .nav-item.active { border-top: 2px solid var(--gold); border-radius: 0; }
   .nav-icon { font-size: 18px; width: auto; }
-
   .layout { flex-direction: column; }
   .main { margin-left: 0; padding: 20px 16px 90px; min-height: 100vh; }
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
@@ -698,17 +650,16 @@ tbody tr:hover td { background: rgba(255,193,7,0.03); color: var(--text); }
 }
 `;
 
-
 /* ═══════════════════════════════════════════════════════════════
    STATIC DATA
 ═══════════════════════════════════════════════════════════════ */
 const CLUBS = [
-  { id:1, name:"Club Informatique", icon:"💻", desc:"Développement, hackathons et projets tech entre passionnés du numérique.",   max:50, color:"linear-gradient(135deg,#4f6ef7,#a78bfa)", c:"#4f6ef7", cat:"Tech"    },
-  { id:2, name:"Club Robotique",    icon:"🤖", desc:"Conception et programmation de robots autonomes pour compétitions et démos.", max:30, color:"linear-gradient(135deg,#2dcb8e,#38f9d7)", c:"#2dcb8e", cat:"Tech"    },
-  { id:3, name:"Club Théâtre",      icon:"🎭", desc:"Arts dramatiques, expression scénique et mises en scène originales.",         max:40, color:"linear-gradient(135deg,#ff6b8a,#ff8c69)", c:"#ff6b8a", cat:"Culture" },
-  { id:4, name:"Club Photo",        icon:"📷", desc:"Photographie numérique, argentique, retouche et expositions.",                 max:25, color:"linear-gradient(135deg,#e8c97a,#f5e0a0)", c:"#e8c97a", cat:"Art"     },
-  { id:5, name:"Club Échecs",       icon:"♟️", desc:"Tournois internes, entraînement tactique et stratégie avancée.",              max:30, color:"linear-gradient(135deg,#9b7fe8,#c4b5fd)", c:"#9b7fe8", cat:"Loisir"  },
-  { id:6, name:"Club Musique",      icon:"🎵", desc:"Groupes, jam sessions, covers et concerts de fin d'année.",                   max:30, color:"linear-gradient(135deg,#ff6b8a,#9b7fe8)", c:"#ff6b8a", cat:"Art"     },
+  { id:"c1", name:"Club Informatique", icon:"💻", desc:"Développement, hackathons et projets tech entre passionnés du numérique.",   max:50, color:"linear-gradient(135deg,#4f6ef7,#a78bfa)", c:"#4f6ef7", cat:"Tech"    },
+  { id:"c2", name:"Club Robotique",    icon:"🤖", desc:"Conception et programmation de robots autonomes pour compétitions et démos.", max:30, color:"linear-gradient(135deg,#2dcb8e,#38f9d7)", c:"#2dcb8e", cat:"Tech"    },
+  { id:"c3", name:"Club Théâtre",      icon:"🎭", desc:"Arts dramatiques, expression scénique et mises en scène originales.",         max:40, color:"linear-gradient(135deg,#ff6b8a,#ff8c69)", c:"#ff6b8a", cat:"Culture" },
+  { id:"c4", name:"Club Photo",        icon:"📷", desc:"Photographie numérique, argentique, retouche et expositions.",                 max:25, color:"linear-gradient(135deg,#e8c97a,#f5e0a0)", c:"#e8c97a", cat:"Art"     },
+  { id:"c5", name:"Club Échecs",       icon:"♟️", desc:"Tournois internes, entraînement tactique et stratégie avancée.",              max:30, color:"linear-gradient(135deg,#9b7fe8,#c4b5fd)", c:"#9b7fe8", cat:"Loisir"  },
+  { id:"c6", name:"Club Musique",      icon:"🎵", desc:"Groupes, jam sessions, covers et concerts de fin d'année.",                   max:30, color:"linear-gradient(135deg,#ff6b8a,#9b7fe8)", c:"#ff6b8a", cat:"Art"     },
 ];
 
 const BADGE_CAT = { Tech:"badge-sky", Culture:"badge-violet", Art:"badge-gold", Loisir:"badge-teal" };
@@ -730,7 +681,7 @@ export default function App() {
   const [toast, setToast]     = useState(null);
   const [modal, setModal]     = useState(null);
   const [form, setForm]       = useState({ prenom:"", nom:"", email:"", club:"", role:"Membre" });
-  const [newEv, setNewEv]     = useState({ title:"", club:"", day:"", month:"", lieu:"" });
+  const [newEv, setNewEv]     = useState({ title:"", clubId:"", day:"", month:"", lieu:"" });
   const [ncName, setNcName]   = useState(""); const [ncDesc, setNcDesc] = useState("");
   const [ncIcon, setNcIcon]   = useState("🎯"); const [ncMax, setNcMax] = useState("30");
 
@@ -743,6 +694,12 @@ export default function App() {
 
   const notify = (msg, ok=true) => { setToast({msg,ok}); setTimeout(()=>setToast(null),3200); };
   const isAdmin = user?.email === "nasri@uniclubs.dz";
+
+  // ── HELPER : résoudre le nom d'un club depuis son ID ──
+  const nomClub = (id) => clubs.find(c => c.id === id || c.name === id)?.name || id;
+  // ── HELPER : compter les membres d'un club par ID ──
+  const countMembres = (clubId, clubName) =>
+    membres.filter(m => m.clubId === clubId || m.club === clubName).length;
 
   /* ─ NAV ─ */
   const nav = [
@@ -857,10 +814,10 @@ export default function App() {
 
       <div className="stats-grid">
         {[
-          {label:"Clubs actifs",        val:clubs.length, delta:"+2 ce mois",      ico:"⬡", accent:"rgba(232,201,122,0.1)",  c:"var(--gold)"},
-          {label:"Membres total",       val:membres.length,delta:"+15 ce mois",    ico:"⊞", accent:"rgba(78,205,196,0.1)",   c:"var(--teal)"},
-          {label:"Événements prévus",   val:events.length, delta:"ce semestre",    ico:"◎", accent:"rgba(155,127,232,0.1)",  c:"var(--violet)"},
-          {label:"Étudiants inscrits",  val:membres.length,delta:"+3 cette semaine",ico:"◈",accent:"rgba(96,175,240,0.1)",  c:"var(--sky)"},
+          {label:"Clubs actifs",        val:clubs.length,  delta:"+2 ce mois",       ico:"⬡", accent:"rgba(232,201,122,0.1)", c:"var(--gold)"},
+          {label:"Membres total",       val:membres.length,delta:"+15 ce mois",      ico:"⊞", accent:"rgba(78,205,196,0.1)",  c:"var(--teal)"},
+          {label:"Événements prévus",   val:events.length, delta:"ce semestre",       ico:"◎", accent:"rgba(155,127,232,0.1)", c:"var(--violet)"},
+          {label:"Étudiants inscrits",  val:membres.length,delta:"+3 cette semaine",  ico:"◈", accent:"rgba(96,175,240,0.1)",  c:"var(--sky)"},
         ].map((s,i)=>(
           <div key={i} className="stat-card">
             <div className="stat-accent" style={{background:s.accent,color:s.c}}>{s.ico}</div>
@@ -881,7 +838,8 @@ export default function App() {
             <div className="ev-date"><div className="ev-day">{ev.day}</div><div className="ev-month">{ev.month}</div></div>
             <div className="ev-info">
               <div className="ev-name">{ev.title}</div>
-              <div className="ev-meta"><span className="ev-tag">{ev.club}</span><span>📍 {ev.lieu}</span></div>
+              {/* ✅ CORRIGÉ : utilise nomClub(ev.clubId) au lieu de ev.club */}
+              <div className="ev-meta"><span className="ev-tag">{nomClub(ev.clubId || ev.club)}</span><span>📍 {ev.lieu}</span></div>
             </div>
             <button className="btn btn-gold btn-sm" onClick={()=>notify(`Inscrit à « ${ev.title} » !`)}>Participer</button>
           </div>
@@ -907,7 +865,8 @@ export default function App() {
         <div className="search-bar"><input placeholder="Rechercher un club..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
         <div className="clubs-grid">
           {fil.map(c=>{
-            const nb = membres.filter(m=>m.club===c.name).length;
+            // ✅ CORRIGÉ : compte par clubId en priorité
+            const nb = countMembres(c.id, c.name);
             const full = nb >= c.max;
             return (
               <div key={c.id} className="club-card">
@@ -953,7 +912,8 @@ export default function App() {
             <div className="ev-date"><div className="ev-day">{ev.day}</div><div className="ev-month">{ev.month}</div></div>
             <div className="ev-info">
               <div className="ev-name">{ev.title}</div>
-              <div className="ev-meta"><span className="ev-tag">{ev.club}</span><span>📍 {ev.lieu}</span><span>👥 {ev.nb||0} places</span></div>
+              {/* ✅ CORRIGÉ : utilise nomClub(ev.clubId) */}
+              <div className="ev-meta"><span className="ev-tag">{nomClub(ev.clubId || ev.club)}</span><span>📍 {ev.lieu}</span><span>👥 {ev.nb||0} places</span></div>
             </div>
             <div style={{display:"flex",gap:8}}>
               <button className="btn btn-gold btn-sm" onClick={()=>notify(`Inscrit à « ${ev.title} » !`)}>Participer</button>
@@ -988,10 +948,15 @@ export default function App() {
                   <tr key={m.id}>
                     <td><div className="td-name"><div className="av" style={{background:m.c||"#4f6ef7"}}>{(m.nom||"?")[0]}</div>{m.nom}</div></td>
                     <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12}}>{m.email}</td>
-                    <td><span className="badge badge-sky">{m.club}</span></td>
+                    {/* ✅ CORRIGÉ : affiche le nom via nomClub(m.clubId) */}
+                    <td><span className="badge badge-sky">{nomClub(m.clubId || m.club)}</span></td>
                     <td><span className="badge badge-gold">{m.role}</span></td>
                     {isAdmin&&<td><div style={{display:"flex",gap:6}}>
-                      <button className="btn btn-teal btn-xs" onClick={()=>{setMembreEdit(m);setForm({prenom:m.nom,email:m.email,club:m.club,role:m.role});setModal("membre");}}>Modifier</button>
+                      <button className="btn btn-teal btn-xs" onClick={()=>{
+                        setMembreEdit(m);
+                        setForm({prenom:m.nom, email:m.email, club:m.clubId||m.club, role:m.role});
+                        setModal("membre");
+                      }}>Modifier</button>
                       <button className="btn btn-rose btn-xs" onClick={()=>{deleteDoc(doc(db,"membres",m.id));notify("Membre supprimé.");}}>Supprimer</button>
                     </div></td>}
                   </tr>
@@ -1021,15 +986,24 @@ export default function App() {
           <div className="fgroup"><label className="flabel">Club souhaité</label>
             <select className="fselect" value={f.club} onChange={e=>setF({...f,club:e.target.value})}>
               <option value="">— Choisir un club —</option>
-              {clubs.map(c=><option key={c.id} value={c.name}>{c.icon} {c.name}</option>)}
+              {clubs.map(c=><option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
             </select>
           </div>
           <div className="fgroup"><label className="flabel">Motivation</label><textarea className="ftextarea" placeholder="Pourquoi souhaitez-vous rejoindre ce club ?" value={f.motiv} onChange={e=>setF({...f,motiv:e.target.value})}/></div>
           <div className="form-actions">
             <button className="btn btn-gold" onClick={()=>{
               if(f.prenom&&f.email&&f.club){
-                addDoc(collection(db,"membres"),{nom:`${f.prenom} ${f.nom}`,email:f.email,club:f.club,role:"Membre",c:"#4f6ef7"});
-                notify(`Inscription au ${f.club} envoyée !`);
+                // ✅ CORRIGÉ : stocke clubId (ID) + etudiantId (UID Firebase)
+                const clubObj = clubs.find(c => c.id === f.club);
+                addDoc(collection(db,"membres"),{
+                  nom:`${f.prenom} ${f.nom}`,
+                  email:f.email,
+                  clubId: f.club,
+                  etudiantId: user.uid,
+                  role:"Membre",
+                  c: clubObj?.c || "#4f6ef7"
+                });
+                notify(`Inscription au ${nomClub(f.club)} envoyée !`);
                 setF({prenom:"",nom:"",email:"",club:"",motiv:""});
               } else notify("Remplissez les champs obligatoires.",false);
             }}>Soumettre</button>
@@ -1041,51 +1015,263 @@ export default function App() {
   };
 
   /* ─ VOTES ─ */
-  const Votes = () => {
-    const [msg,setMsg]=useState("");
-    const aVote = id => votes.some(v=>v.clubId===id&&v.etudiantId===user.uid);
-    async function voter(id,choix){
-      if(aVote(id)){setMsg("error:Tu as déjà voté pour ce club.");return;}
-      await addDoc(collection(db,"votes"),{etudiantId:user.uid,clubId:id,choix,date:new Date()});
-      setMsg("ok:Vote enregistré !");setTimeout(()=>setMsg(""),3000);
-    }
-    const ok = msg.startsWith("ok:");
-    return (
-      <div style={{animation:"slideUp 0.35s ease"}}>
-        <div className="page-header"><div><div className="page-eyebrow">Démocratie</div><div className="page-title">Votes</div><div className="page-sub">Exprimez votre soutien aux clubs</div></div></div>
-        {msg && <div className={`alert ${ok?"alert-success":"alert-error"}`}><span>{ok?"✓":"✗"}</span>{msg.slice(3)}</div>}
-        <div className="tbl-wrap">
-          <table>
-            <thead><tr><th>Club</th><th>Statut</th><th>Mon vote</th><th>Action</th></tr></thead>
-            <tbody>
-              {clubs.map(c=>{
-                const mv=votes.find(v=>v.clubId===c.id&&v.etudiantId===user.uid);
-                return (
-                  <tr key={c.id}>
-                    <td><div className="td-name"><span style={{fontSize:18}}>{c.icon}</span>{c.name}</div></td>
-                    <td><span className={`badge ${mv?"badge-teal":"badge-gold"}`}>{mv?"✓ Voté":"En attente"}</span></td>
-                    <td style={{fontWeight:500}}>{mv ? (mv.choix==="pour"?"👍 Pour":"👎 Contre") : <span style={{color:"var(--text3)"}}>—</span>}</td>
-                    <td>{!mv ? (
-                      <div style={{display:"flex",gap:8}}>
-                        <button className="btn btn-teal btn-xs" onClick={()=>voter(c.id,"pour")}>👍 Pour</button>
-                        <button className="btn btn-rose btn-xs" onClick={()=>voter(c.id,"contre")}>👎 Contre</button>
-                      </div>
-                    ) : <span style={{color:"var(--text3)",fontSize:12}}>Déjà voté</span>}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+const Votes = () => {
+  const [elections, setElections] = useState([]);
+  const [candidatForm, setCandidatForm] = useState({ nom: "", clubId: "", electionId: "" });
+  const [newElec, setNewElec] = useState({ clubId: "", titre: "" });
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    const u = onSnapshot(collection(db, "elections"), s =>
+      setElections(s.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
+    return () => u();
+  }, []);
+
+  const notify2 = (txt, ok = true) => { setMsg((ok?"ok:":"error:") + txt); setTimeout(() => setMsg(""), 3500); };
+  const msgOk = msg.startsWith("ok:");
+
+  // ── Créer une élection (admin) ──
+  async function creerElection() {
+    if (!newElec.clubId || !newElec.titre) { notify2("Club et titre requis.", false); return; }
+    await addDoc(collection(db, "elections"), {
+      clubId: newElec.clubId,
+      titre: newElec.titre,
+      statut: "ouverte",
+      candidats: [],
+      createdAt: new Date(),
+    });
+    notify2("Élection créée !");
+    setNewElec({ clubId: "", titre: "" });
+  }
+
+  // ── Ajouter un candidat (admin) ──
+  async function ajouterCandidat(elec) {
+    if (!candidatForm.nom) { notify2("Nom du candidat requis.", false); return; }
+    const updated = [...(elec.candidats || []), { nom: candidatForm.nom, votes: 0, id: Date.now().toString() }];
+    await updateDoc(doc(db, "elections", elec.id), { candidats: updated });
+    notify2(`${candidatForm.nom} ajouté !`);
+    setCandidatForm({ nom: "", clubId: "", electionId: "" });
+  }
+
+  // ── Voter pour un candidat ──
+  async function voter(elec, candidatId) {
+    const dejaVote = (elec.votants || []).includes(user.uid);
+    if (dejaVote) { notify2("Vous avez déjà voté pour cette élection.", false); return; }
+    const updated = (elec.candidats || []).map(c =>
+      c.id === candidatId ? { ...c, votes: (c.votes || 0) + 1 } : c
+    );
+    const votants = [...(elec.votants || []), user.uid];
+    await updateDoc(doc(db, "elections", elec.id), { candidats: updated, votants });
+    notify2("Vote enregistré !");
+  }
+
+  // ── Clôturer une élection (admin) ──
+  async function cloturer(elec) {
+    const gagnant = [...(elec.candidats || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
+    await updateDoc(doc(db, "elections", elec.id), {
+      statut: "cloturée",
+      gagnant: gagnant?.nom || "—"
+    });
+    notify2(`Élection clôturée ! Président élu : ${gagnant?.nom || "—"}`);
+  }
+
+  // ── Supprimer une élection (admin) ──
+  async function supprimerElection(id) {
+    await deleteDoc(doc(db, "elections", id));
+    notify2("Élection supprimée.");
+  }
+
+  return (
+    <div style={{ animation: "slideUp 0.35s ease" }}>
+      <div className="page-header">
+        <div>
+          <div className="page-eyebrow">Démocratie étudiante</div>
+          <div className="page-title">Élections des présidents</div>
+          <div className="page-sub">Votez pour élire le président de votre club</div>
         </div>
       </div>
-    );
-  };
+
+      {msg && (
+        <div className={`alert ${msgOk ? "alert-success" : "alert-error"}`}>
+          <span>{msgOk ? "✓" : "✗"}</span>{msg.slice(3)}
+        </div>
+      )}
+
+      {/* ── PANNEAU ADMIN : créer une élection ── */}
+      {isAdmin && (
+        <div className="adm-card" style={{ marginBottom: 28 }}>
+          <div className="adm-title">⚙ Créer une élection</div>
+          <div className="frow">
+            <div className="fgroup">
+              <label className="flabel">Club</label>
+              <select className="fselect" value={newElec.clubId} onChange={e => setNewElec({ ...newElec, clubId: e.target.value })}>
+                <option value="">— Choisir un club —</option>
+                {clubs.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+              </select>
+            </div>
+            <div className="fgroup">
+              <label className="flabel">Titre de l'élection</label>
+              <input className="finput" placeholder="Ex : Élection présidentielle 2026" value={newElec.titre}
+                onChange={e => setNewElec({ ...newElec, titre: e.target.value })} />
+            </div>
+          </div>
+          <button className="btn btn-gold" onClick={creerElection}>⊕ Lancer l'élection</button>
+        </div>
+      )}
+
+      {/* ── LISTE DES ÉLECTIONS ── */}
+      {elections.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">🗳️</div>
+          <div className="empty-text">Aucune élection en cours</div>
+          <div className="empty-sub">L'administrateur peut en créer depuis ce panneau</div>
+        </div>
+      ) : (
+        elections.map(elec => {
+          const total = (elec.candidats || []).reduce((s, c) => s + (c.votes || 0), 0);
+          const dejaVote = (elec.votants || []).includes(user.uid);
+          const cloturee = elec.statut === "cloturée";
+          const sorted = [...(elec.candidats || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+          return (
+            <div key={elec.id} className="card" style={{ padding: 24, marginBottom: 20 }}>
+
+              {/* En-tête élection */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+                    {nomClub(elec.clubId)}
+                  </div>
+                  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontWeight: 600, color: "var(--text)" }}>
+                    {elec.titre}
+                  </div>
+                  <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+                    <span className={`badge ${cloturee ? "badge-rose" : "badge-teal"}`}>
+                      {cloturee ? "⬛ Clôturée" : "◉ En cours"}
+                    </span>
+                    <span style={{ fontSize: 12, color: "var(--text3)" }}>{total} vote{total > 1 ? "s" : ""} exprimé{total > 1 ? "s" : ""}</span>
+                    {dejaVote && !cloturee && <span className="badge badge-gold">✓ Vous avez voté</span>}
+                  </div>
+                </div>
+                {isAdmin && !cloturee && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn btn-teal btn-sm" onClick={() => cloturer(elec)}>🏆 Clôturer</button>
+                    <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑</button>
+                  </div>
+                )}
+                {isAdmin && cloturee && (
+                  <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑 Supprimer</button>
+                )}
+              </div>
+
+              {/* Résultat si clôturée */}
+              {cloturee && (
+                <div style={{
+                  background: "rgba(255,193,7,0.08)", border: "1px solid rgba(255,193,7,0.25)",
+                  borderRadius: 12, padding: "14px 20px", marginBottom: 20,
+                  display: "flex", alignItems: "center", gap: 14
+                }}>
+                  <span style={{ fontSize: 32 }}>🏆</span>
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1.5 }}>Président élu</div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: "var(--gold)" }}>
+                      {elec.gagnant}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Candidats */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: isAdmin && !cloturee ? 20 : 0 }}>
+                {sorted.length === 0 && (
+                  <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
+                    Aucun candidat pour le moment
+                  </div>
+                )}
+                {sorted.map((c, i) => {
+                  const pct = total > 0 ? Math.round((c.votes || 0) / total * 100) : 0;
+                  const isWinner = cloturee && i === 0 && c.votes > 0;
+                  return (
+                    <div key={c.id} style={{
+                      background: isWinner ? "rgba(255,193,7,0.07)" : "var(--surface)",
+                      border: `1px solid ${isWinner ? "rgba(255,193,7,0.25)" : "var(--border)"}`,
+                      borderRadius: 12, padding: "14px 18px",
+                      display: "flex", alignItems: "center", gap: 16,
+                      transition: "all 0.2s"
+                    }}>
+                      {/* Rang */}
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+                        background: isWinner ? "rgba(255,193,7,0.15)" : "rgba(255,255,255,0.05)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 14, fontWeight: 700,
+                        color: isWinner ? "var(--gold)" : "var(--text3)"
+                      }}>
+                        {isWinner ? "🥇" : `#${i + 1}`}
+                      </div>
+
+                      {/* Nom + barre */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontWeight: 500, fontSize: 14, color: isWinner ? "var(--gold2)" : "var(--text)" }}>
+                            {c.nom}
+                          </span>
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "var(--text2)" }}>
+                            {c.votes || 0} vote{(c.votes || 0) > 1 ? "s" : ""} — {pct}%
+                          </span>
+                        </div>
+                        <div className="prog-track">
+                          <div className="prog-fill" style={{
+                            width: `${pct}%`,
+                            background: isWinner
+                              ? "linear-gradient(90deg,#FFC107,#FFD54F)"
+                              : "linear-gradient(90deg,#4ecdc4,#60aff0)"
+                          }} />
+                        </div>
+                      </div>
+
+                      {/* Bouton voter */}
+                      {!cloturee && !dejaVote && (
+                        <button className="btn btn-gold btn-sm" style={{ flexShrink: 0 }} onClick={() => voter(elec, c.id)}>
+                          Voter
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Ajouter un candidat (admin) */}
+              {isAdmin && !cloturee && (
+                <div style={{
+                  borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 4,
+                  display: "flex", gap: 10, alignItems: "flex-end"
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="flabel">Ajouter un candidat</label>
+                    <input className="finput" placeholder="Nom du candidat"
+                      value={candidatForm.electionId === elec.id ? candidatForm.nom : ""}
+                      onChange={e => setCandidatForm({ nom: e.target.value, electionId: elec.id })} />
+                  </div>
+                  <button className="btn btn-teal btn-sm" style={{ marginBottom: 1 }}
+                    onClick={() => ajouterCandidat(elec)}>
+                    ⊕ Ajouter
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
   /* ─ PAIEMENTS ─ */
   const Paiements = () => {
     const [selClub,setSelClub]=useState(""); const [montant,setMontant]=useState(""); const [msg,setMsg]=useState("");
     const mesPaie = paiements.filter(p=>p.etudiantId===user.uid);
-    const nomClub = id => clubs.find(c=>c.id===id)?.name||id;
     async function payer(){
       if(!selClub||!montant){setMsg("error:Remplis tous les champs.");return;}
       await addDoc(collection(db,"paiements"),{etudiantId:user.uid,clubId:selClub,montant:parseFloat(montant),date:new Date(),statut:"en attente"});
@@ -1122,6 +1308,7 @@ export default function App() {
               <tbody>
                 {mesPaie.map(p=>(
                   <tr key={p.id}>
+                    {/* ✅ CORRIGÉ : affiche le nom via nomClub(p.clubId) */}
                     <td>{nomClub(p.clubId)}</td>
                     <td style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:500,color:"var(--gold)"}}>{p.montant} DJF</td>
                     <td><span className={`badge ${p.statut==="payé"?"badge-teal":"badge-gold"}`}>{p.statut}</span></td>
@@ -1143,17 +1330,24 @@ export default function App() {
       <div className="adm-grid">
         <div className="adm-card">
           <div className="adm-title">Taux de remplissage</div>
-          {clubs.map(c=><div key={c.id} className="prog-item">
-            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(membres.filter(m=>m.club===c.name).length/c.max*100)}%</span></div>
-            <div className="prog-track"><div className="prog-fill" style={{width:`${membres.filter(m=>m.club===c.name).length/c.max*100}%`}}/></div>
-          </div>)}
+          {clubs.map(c=>{
+            // ✅ CORRIGÉ : compte par ID
+            const nb = countMembres(c.id, c.name);
+            return <div key={c.id} className="prog-item">
+              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{Math.round(nb/c.max*100)}%</span></div>
+              <div className="prog-track"><div className="prog-fill" style={{width:`${nb/c.max*100}%`}}/></div>
+            </div>;
+          })}
         </div>
         <div className="adm-card">
           <div className="adm-title">Répartition des membres</div>
-          {clubs.map(c=><div key={c.id} className="prog-item">
-            <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{membres.filter(m=>m.club===c.name).length} membres</span></div>
-            <div className="prog-track"><div className="prog-fill" style={{width:`${membres.length?membres.filter(m=>m.club===c.name).length/membres.length*100:0}%`,background:c.color}}/></div>
-          </div>)}
+          {clubs.map(c=>{
+            const nb = countMembres(c.id, c.name);
+            return <div key={c.id} className="prog-item">
+              <div className="prog-row"><span>{c.icon} {c.name}</span><span className="prog-pct">{nb} membres</span></div>
+              <div className="prog-track"><div className="prog-fill" style={{width:`${membres.length?nb/membres.length*100:0}%`,background:c.color}}/></div>
+            </div>;
+          })}
         </div>
       </div>
 
@@ -1182,7 +1376,7 @@ export default function App() {
           <thead><tr><th>Club</th><th>Catégorie</th><th>Membres</th><th>Statut</th><th>Actions</th></tr></thead>
           <tbody>
             {clubs.map(c=>{
-              const nb=membres.filter(m=>m.club===c.name).length;
+              const nb = countMembres(c.id, c.name);
               return (
                 <tr key={c.id}>
                   <td><div className="td-name"><span style={{fontSize:18}}>{c.icon}</span>{c.name}</div></td>
@@ -1203,14 +1397,13 @@ export default function App() {
   );
 
   /* ─ ROUTING ─ */
-  const Clubs2     = () => <Clubs     isAdmin={isAdmin}/>;
-  const Evenements2= () => <Evenements isAdmin={isAdmin}/>;
-  const Membres2   = () => <Membres   isAdmin={isAdmin}/>;
+  const Clubs2      = () => <Clubs      isAdmin={isAdmin}/>;
+  const Evenements2 = () => <Evenements isAdmin={isAdmin}/>;
+  const Membres2    = () => <Membres    isAdmin={isAdmin}/>;
   const pages = { accueil:Accueil, clubs:Clubs2, evenements:Evenements2, membres:Membres2,
                   inscription:Inscription, votes:Votes, paiements:Paiements, admin:Admin };
   const Page = pages[page];
 
-  /* ─ GROUP SIDEBAR NAV ─ */
   const groups = [...new Set(nav.map(n=>n.group))];
 
   return (
@@ -1276,7 +1469,11 @@ export default function App() {
               </div>
               <div className="form-actions">
                 <button className="btn btn-gold" onClick={()=>{
-                  if(ncName){addDoc(collection(db,"clubs"),{name:ncName,desc:ncDesc,icon:ncIcon||"🎯",max:parseInt(ncMax)||30,color:"linear-gradient(135deg,#4f6ef7,#a78bfa)",cat:"Autre",c:"#4f6ef7"});setModal(null);notify(`Club "${ncName}" créé !`);setNcName("");setNcDesc("");setNcIcon("🎯");setNcMax("30");}else notify("Entrez un nom.",false);
+                  if(ncName){
+                    addDoc(collection(db,"clubs"),{name:ncName,desc:ncDesc,icon:ncIcon||"🎯",max:parseInt(ncMax)||30,color:"linear-gradient(135deg,#4f6ef7,#a78bfa)",cat:"Autre",c:"#4f6ef7"});
+                    setModal(null);notify(`Club "${ncName}" créé !`);
+                    setNcName("");setNcDesc("");setNcIcon("🎯");setNcMax("30");
+                  } else notify("Entrez un nom.",false);
                 }}>Créer le club</button>
                 <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
               </div>
@@ -1291,9 +1488,10 @@ export default function App() {
               <div className="modal-head"><div className="modal-ttl">Nouvel événement</div><button className="close-btn" onClick={()=>setModal(null)}>✕</button></div>
               <div className="fgroup"><label className="flabel">Titre</label><input className="finput" placeholder="Hackathon 2026" value={newEv.title} onChange={e=>setNewEv({...newEv,title:e.target.value})}/></div>
               <div className="fgroup"><label className="flabel">Club organisateur</label>
-                <select className="fselect" value={newEv.club} onChange={e=>setNewEv({...newEv,club:e.target.value})}>
+                <select className="fselect" value={newEv.clubId} onChange={e=>setNewEv({...newEv,clubId:e.target.value})}>
                   <option value="">— Choisir —</option>
-                  {clubs.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+                  {/* ✅ CORRIGÉ : stocke l'ID du club dans clubId */}
+                  {clubs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="frow">
@@ -1303,7 +1501,20 @@ export default function App() {
               <div className="fgroup"><label className="flabel">Lieu</label><input className="finput" placeholder="Amphi A" value={newEv.lieu} onChange={e=>setNewEv({...newEv,lieu:e.target.value})}/></div>
               <div className="form-actions">
                 <button className="btn btn-gold" onClick={()=>{
-                  if(newEv.title&&newEv.club){addDoc(collection(db,"evenements"),{...newEv,nb:0});setModal(null);notify(`"${newEv.title}" ajouté !`);setNewEv({title:"",club:"",day:"",month:"",lieu:""});}else notify("Titre et club requis.",false);
+                  if(newEv.title && newEv.clubId){
+                    // ✅ CORRIGÉ : sauvegarde clubId (ID) au lieu de club (nom)
+                    addDoc(collection(db,"evenements"),{
+                      title: newEv.title,
+                      clubId: newEv.clubId,
+                      day: newEv.day,
+                      month: newEv.month,
+                      lieu: newEv.lieu,
+                      nb: 0
+                    });
+                    setModal(null);
+                    notify(`"${newEv.title}" ajouté !`);
+                    setNewEv({title:"",clubId:"",day:"",month:"",lieu:""});
+                  } else notify("Titre et club requis.",false);
                 }}>Ajouter</button>
                 <button className="btn btn-ghost" onClick={()=>setModal(null)}>Annuler</button>
               </div>
@@ -1324,7 +1535,8 @@ export default function App() {
               <div className="fgroup"><label className="flabel">Club</label>
                 <select className="fselect" value={form.club} onChange={e=>setForm({...form,club:e.target.value})}>
                   <option value="">— Choisir —</option>
-                  {clubs.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+                  {/* ✅ CORRIGÉ : valeur = ID du club */}
+                  {clubs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="fgroup"><label className="flabel">Rôle</label>
@@ -1335,10 +1547,26 @@ export default function App() {
               <div className="form-actions">
                 <button className="btn btn-gold" onClick={()=>{
                   if(form.prenom&&form.email&&form.club){
-                    if(membreEdit)updateDoc(doc(db,"membres",membreEdit.id),{nom:form.prenom,email:form.email,club:form.club,role:form.role});
-                    else addDoc(collection(db,"membres"),{nom:form.prenom,email:form.email,club:form.club,role:form.role,c:"#4f6ef7"});
+                    const clubObj = clubs.find(c => c.id === form.club);
+                    if(membreEdit){
+                      // ✅ CORRIGÉ : met à jour clubId au lieu de club
+                      updateDoc(doc(db,"membres",membreEdit.id),{
+                        nom:form.prenom, email:form.email,
+                        clubId:form.club, role:form.role
+                      });
+                    } else {
+                      // ✅ CORRIGÉ : stocke clubId + etudiantId
+                      addDoc(collection(db,"membres"),{
+                        nom:form.prenom, email:form.email,
+                        clubId:form.club,
+                        etudiantId: user.uid,
+                        role:form.role,
+                        c: clubObj?.c || "#4f6ef7"
+                      });
+                    }
                     notify(membreEdit?"Membre modifié !":"Membre ajouté !");
-                    setModal(null);setMembreEdit(null);setForm({prenom:"",nom:"",email:"",club:"",role:"Membre"});
+                    setModal(null);setMembreEdit(null);
+                    setForm({prenom:"",nom:"",email:"",club:"",role:"Membre"});
                   } else notify("Tous les champs sont requis.",false);
                 }}>{membreEdit?"Enregistrer":"Ajouter"}</button>
                 <button className="btn btn-ghost" onClick={()=>{setModal(null);setMembreEdit(null);}}>Annuler</button>
