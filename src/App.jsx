@@ -1014,12 +1014,11 @@ export default function App() {
     );
   };
 
-  /* ─ VOTES ─ */
+/* ─ VOTES ─ */
 const Votes = () => {
-  const [elections, setElections] = useState([]);
-  const [candidatForm, setCandidatForm] = useState({ nom: "", clubId: "", electionId: "" });
-  const [newElec, setNewElec] = useState({ clubId: "", titre: "" });
-  const [msg, setMsg] = useState("");
+  const [elections, setElections]   = useState([]);
+  const [newElec, setNewElec]       = useState({ clubId: "", titre: "" });
+  const [msg, setMsg]               = useState("");
 
   useEffect(() => {
     const u = onSnapshot(collection(db, "elections"), s =>
@@ -1028,50 +1027,94 @@ const Votes = () => {
     return () => u();
   }, []);
 
-  const notify2 = (txt, ok = true) => { setMsg((ok?"ok:":"error:") + txt); setTimeout(() => setMsg(""), 3500); };
+  const notify2 = (txt, ok = true) => {
+    setMsg((ok ? "ok:" : "error:") + txt);
+    setTimeout(() => setMsg(""), 3500);
+  };
   const msgOk = msg.startsWith("ok:");
+
+  // ── Membre connecté ──
+  const monProfil = membres.find(m => m.etudiantId === user.uid);
 
   // ── Créer une élection (admin) ──
   async function creerElection() {
-    if (!newElec.clubId || !newElec.titre) { notify2("Club et titre requis.", false); return; }
+    if (!newElec.clubId || !newElec.titre) {
+      notify2("Club et titre requis.", false); return;
+    }
     await addDoc(collection(db, "elections"), {
-      clubId: newElec.clubId,
-      titre: newElec.titre,
-      statut: "ouverte",
-      candidats: [],
-      createdAt: new Date(),
+      clubId:      newElec.clubId,
+      titre:       newElec.titre,
+      statut:      "candidatures",   // candidatures → vote → cloturée
+      candidats:   [],               // { membreId, nom, statut: "attente"|"validé"|"refusé", votes }
+      votants:     [],
+      createdAt:   new Date(),
     });
-    notify2("Élection créée !");
+    notify2("Élection créée — en attente de candidatures !");
     setNewElec({ clubId: "", titre: "" });
   }
 
-  // ── Ajouter un candidat (admin) ──
-  async function ajouterCandidat(elec) {
-    if (!candidatForm.nom) { notify2("Nom du candidat requis.", false); return; }
-    const updated = [...(elec.candidats || []), { nom: candidatForm.nom, votes: 0, id: Date.now().toString() }];
+  // ── Se proposer comme candidat ──
+  async function seProposer(elec) {
+    if (!monProfil) { notify2("Vous n'êtes pas encore inscrit à un club.", false); return; }
+    if (monProfil.clubId !== elec.clubId) {
+      notify2("Vous n'êtes pas membre de ce club.", false); return;
+    }
+    const dejaCandidrat = (elec.candidats || []).some(c => c.membreId === user.uid);
+    if (dejaCandidrat) { notify2("Vous êtes déjà candidat.", false); return; }
+    const updated = [...(elec.candidats || []), {
+      membreId: user.uid,
+      nom:      monProfil.nom,
+      statut:   "attente",
+      votes:    0,
+      id:       Date.now().toString(),
+    }];
     await updateDoc(doc(db, "elections", elec.id), { candidats: updated });
-    notify2(`${candidatForm.nom} ajouté !`);
-    setCandidatForm({ nom: "", clubId: "", electionId: "" });
+    notify2("Candidature soumise ! En attente de validation.");
+  }
+
+  // ── Valider ou refuser un candidat (admin) ──
+  async function validerCandidat(elec, candidatId, decision) {
+    const updated = (elec.candidats || []).map(c =>
+      c.id === candidatId ? { ...c, statut: decision } : c
+    );
+    await updateDoc(doc(db, "elections", elec.id), { candidats: updated });
+    notify2(decision === "validé" ? "Candidat validé !" : "Candidat refusé.");
+  }
+
+  // ── Lancer le vote (admin) ──
+  async function lancerVote(elec) {
+    const valides = (elec.candidats || []).filter(c => c.statut === "validé");
+    if (valides.length < 2) {
+      notify2("Il faut au moins 2 candidats validés pour lancer le vote.", false); return;
+    }
+    await updateDoc(doc(db, "elections", elec.id), { statut: "vote" });
+    notify2("Vote lancé ! Les membres peuvent maintenant voter.");
   }
 
   // ── Voter pour un candidat ──
   async function voter(elec, candidatId) {
+    if (!monProfil || monProfil.clubId !== elec.clubId) {
+      notify2("Vous n'êtes pas membre de ce club.", false); return;
+    }
     const dejaVote = (elec.votants || []).includes(user.uid);
-    if (dejaVote) { notify2("Vous avez déjà voté pour cette élection.", false); return; }
+    if (dejaVote) { notify2("Vous avez déjà voté.", false); return; }
     const updated = (elec.candidats || []).map(c =>
       c.id === candidatId ? { ...c, votes: (c.votes || 0) + 1 } : c
     );
-    const votants = [...(elec.votants || []), user.uid];
-    await updateDoc(doc(db, "elections", elec.id), { candidats: updated, votants });
+    await updateDoc(doc(db, "elections", elec.id), {
+      candidats: updated,
+      votants:   [...(elec.votants || []), user.uid],
+    });
     notify2("Vote enregistré !");
   }
 
-  // ── Clôturer une élection (admin) ──
+  // ── Clôturer l'élection (admin) ──
   async function cloturer(elec) {
-    const gagnant = [...(elec.candidats || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
+    const valides = (elec.candidats || []).filter(c => c.statut === "validé");
+    const gagnant = [...valides].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
     await updateDoc(doc(db, "elections", elec.id), {
-      statut: "cloturée",
-      gagnant: gagnant?.nom || "—"
+      statut:  "cloturée",
+      gagnant: gagnant?.nom || "—",
     });
     notify2(`Élection clôturée ! Président élu : ${gagnant?.nom || "—"}`);
   }
@@ -1082,13 +1125,20 @@ const Votes = () => {
     notify2("Élection supprimée.");
   }
 
+  // ── Label du statut ──
+  const statutLabel = {
+    candidatures: { txt: "📋 Candidatures ouvertes", cls: "badge-sky"    },
+    vote:         { txt: "🗳️ Vote en cours",          cls: "badge-teal"   },
+    cloturée:     { txt: "🔒 Clôturée",               cls: "badge-rose"   },
+  };
+
   return (
     <div style={{ animation: "slideUp 0.35s ease" }}>
       <div className="page-header">
         <div>
           <div className="page-eyebrow">Démocratie étudiante</div>
           <div className="page-title">Élections des présidents</div>
-          <div className="page-sub">Votez pour élire le président de votre club</div>
+          <div className="page-sub">Candidatez et votez pour élire le président de votre club</div>
         </div>
       </div>
 
@@ -1098,21 +1148,23 @@ const Votes = () => {
         </div>
       )}
 
-      {/* ── PANNEAU ADMIN : créer une élection ── */}
+      {/* ══ PANNEAU ADMIN : créer une élection ══ */}
       {isAdmin && (
         <div className="adm-card" style={{ marginBottom: 28 }}>
           <div className="adm-title">⚙ Créer une élection</div>
           <div className="frow">
             <div className="fgroup">
               <label className="flabel">Club</label>
-              <select className="fselect" value={newElec.clubId} onChange={e => setNewElec({ ...newElec, clubId: e.target.value })}>
+              <select className="fselect" value={newElec.clubId}
+                onChange={e => setNewElec({ ...newElec, clubId: e.target.value })}>
                 <option value="">— Choisir un club —</option>
                 {clubs.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
               </select>
             </div>
             <div className="fgroup">
-              <label className="flabel">Titre de l'élection</label>
-              <input className="finput" placeholder="Ex : Élection présidentielle 2026" value={newElec.titre}
+              <label className="flabel">Titre</label>
+              <input className="finput" placeholder="Ex : Élection présidentielle 2026"
+                value={newElec.titre}
                 onChange={e => setNewElec({ ...newElec, titre: e.target.value })} />
             </div>
           </div>
@@ -1120,150 +1172,198 @@ const Votes = () => {
         </div>
       )}
 
-      {/* ── LISTE DES ÉLECTIONS ── */}
+      {/* ══ LISTE DES ÉLECTIONS ══ */}
       {elections.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🗳️</div>
           <div className="empty-text">Aucune élection en cours</div>
           <div className="empty-sub">L'administrateur peut en créer depuis ce panneau</div>
         </div>
-      ) : (
-        elections.map(elec => {
-          const total = (elec.candidats || []).reduce((s, c) => s + (c.votes || 0), 0);
-          const dejaVote = (elec.votants || []).includes(user.uid);
-          const cloturee = elec.statut === "cloturée";
-          const sorted = [...(elec.candidats || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      ) : elections.map(elec => {
+        const candidatsValides = (elec.candidats || []).filter(c => c.statut === "validé");
+        const candidatsAttente = (elec.candidats || []).filter(c => c.statut === "attente");
+        const total     = candidatsValides.reduce((s, c) => s + (c.votes || 0), 0);
+        const dejaVote  = (elec.votants || []).includes(user.uid);
+        const estCandid = (elec.candidats || []).some(c => c.membreId === user.uid);
+        const estMembre = monProfil?.clubId === elec.clubId;
+        const sl        = statutLabel[elec.statut] || statutLabel["candidatures"];
+        const sorted    = [...candidatsValides].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 
-          return (
-            <div key={elec.id} className="card" style={{ padding: 24, marginBottom: 20 }}>
+        return (
+          <div key={elec.id} className="card" style={{ padding: 26, marginBottom: 20 }}>
 
-              {/* En-tête élection */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
-                    {nomClub(elec.clubId)}
-                  </div>
-                  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontWeight: 600, color: "var(--text)" }}>
-                    {elec.titre}
-                  </div>
-                  <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
-                    <span className={`badge ${cloturee ? "badge-rose" : "badge-teal"}`}>
-                      {cloturee ? "⬛ Clôturée" : "◉ En cours"}
-                    </span>
-                    <span style={{ fontSize: 12, color: "var(--text3)" }}>{total} vote{total > 1 ? "s" : ""} exprimé{total > 1 ? "s" : ""}</span>
-                    {dejaVote && !cloturee && <span className="badge badge-gold">✓ Vous avez voté</span>}
-                  </div>
+            {/* ── En-tête ── */}
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+              <div>
+                <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase", letterSpacing:2, marginBottom:4 }}>
+                  {nomClub(elec.clubId)}
                 </div>
-                {isAdmin && !cloturee && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button className="btn btn-teal btn-sm" onClick={() => cloturer(elec)}>🏆 Clôturer</button>
-                    <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑</button>
-                  </div>
-                )}
-                {isAdmin && cloturee && (
-                  <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑 Supprimer</button>
-                )}
+                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19, fontWeight:600, color:"var(--text)" }}>
+                  {elec.titre}
+                </div>
+                <div style={{ marginTop:10, display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
+                  <span className={`badge ${sl.cls}`}>{sl.txt}</span>
+                  {elec.statut === "vote" &&
+                    <span style={{ fontSize:12, color:"var(--text3)" }}>{total} vote{total>1?"s":""} exprimé{total>1?"s":""}</span>}
+                  {dejaVote && elec.statut==="vote" &&
+                    <span className="badge badge-gold">✓ Vous avez voté</span>}
+                  {estCandid &&
+                    <span className="badge badge-violet">📋 Vous êtes candidat</span>}
+                </div>
               </div>
 
-              {/* Résultat si clôturée */}
-              {cloturee && (
-                <div style={{
-                  background: "rgba(255,193,7,0.08)", border: "1px solid rgba(255,193,7,0.25)",
-                  borderRadius: 12, padding: "14px 20px", marginBottom: 20,
-                  display: "flex", alignItems: "center", gap: 14
-                }}>
-                  <span style={{ fontSize: 32 }}>🏆</span>
-                  <div>
-                    <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1.5 }}>Président élu</div>
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: "var(--gold)" }}>
-                      {elec.gagnant}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Candidats */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: isAdmin && !cloturee ? 20 : 0 }}>
-                {sorted.length === 0 && (
-                  <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
-                    Aucun candidat pour le moment
-                  </div>
-                )}
-                {sorted.map((c, i) => {
-                  const pct = total > 0 ? Math.round((c.votes || 0) / total * 100) : 0;
-                  const isWinner = cloturee && i === 0 && c.votes > 0;
-                  return (
-                    <div key={c.id} style={{
-                      background: isWinner ? "rgba(255,193,7,0.07)" : "var(--surface)",
-                      border: `1px solid ${isWinner ? "rgba(255,193,7,0.25)" : "var(--border)"}`,
-                      borderRadius: 12, padding: "14px 18px",
-                      display: "flex", alignItems: "center", gap: 16,
-                      transition: "all 0.2s"
-                    }}>
-                      {/* Rang */}
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-                        background: isWinner ? "rgba(255,193,7,0.15)" : "rgba(255,255,255,0.05)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 14, fontWeight: 700,
-                        color: isWinner ? "var(--gold)" : "var(--text3)"
-                      }}>
-                        {isWinner ? "🥇" : `#${i + 1}`}
-                      </div>
-
-                      {/* Nom + barre */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                          <span style={{ fontWeight: 500, fontSize: 14, color: isWinner ? "var(--gold2)" : "var(--text)" }}>
-                            {c.nom}
-                          </span>
-                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: "var(--text2)" }}>
-                            {c.votes || 0} vote{(c.votes || 0) > 1 ? "s" : ""} — {pct}%
-                          </span>
-                        </div>
-                        <div className="prog-track">
-                          <div className="prog-fill" style={{
-                            width: `${pct}%`,
-                            background: isWinner
-                              ? "linear-gradient(90deg,#FFC107,#FFD54F)"
-                              : "linear-gradient(90deg,#4ecdc4,#60aff0)"
-                          }} />
-                        </div>
-                      </div>
-
-                      {/* Bouton voter */}
-                      {!cloturee && !dejaVote && (
-                        <button className="btn btn-gold btn-sm" style={{ flexShrink: 0 }} onClick={() => voter(elec, c.id)}>
-                          Voter
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Ajouter un candidat (admin) */}
-              {isAdmin && !cloturee && (
-                <div style={{
-                  borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 4,
-                  display: "flex", gap: 10, alignItems: "flex-end"
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <label className="flabel">Ajouter un candidat</label>
-                    <input className="finput" placeholder="Nom du candidat"
-                      value={candidatForm.electionId === elec.id ? candidatForm.nom : ""}
-                      onChange={e => setCandidatForm({ nom: e.target.value, electionId: elec.id })} />
-                  </div>
-                  <button className="btn btn-teal btn-sm" style={{ marginBottom: 1 }}
-                    onClick={() => ajouterCandidat(elec)}>
-                    ⊕ Ajouter
-                  </button>
+              {/* Actions admin */}
+              {isAdmin && (
+                <div style={{ display:"flex", gap:8 }}>
+                  {elec.statut === "candidatures" &&
+                    <button className="btn btn-teal btn-sm" onClick={() => lancerVote(elec)}>
+                      🗳️ Lancer le vote
+                    </button>}
+                  {elec.statut === "vote" &&
+                    <button className="btn btn-gold btn-sm" onClick={() => cloturer(elec)}>
+                      🏆 Clôturer
+                    </button>}
+                  <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑</button>
                 </div>
               )}
             </div>
-          );
-        })
-      )}
+
+            {/* ── Résultat final ── */}
+            {elec.statut === "cloturée" && (
+              <div style={{
+                background:"rgba(255,193,7,0.08)", border:"1px solid rgba(255,193,7,0.25)",
+                borderRadius:14, padding:"16px 22px", marginBottom:22,
+                display:"flex", alignItems:"center", gap:16
+              }}>
+                <span style={{ fontSize:38 }}>🏆</span>
+                <div>
+                  <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase", letterSpacing:1.5 }}>Président élu</div>
+                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:22, fontWeight:700, color:"var(--gold)" }}>
+                    {elec.gagnant}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Candidatures en attente (admin seulement) ── */}
+            {isAdmin && elec.statut === "candidatures" && candidatsAttente.length > 0 && (
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:12, fontWeight:600, color:"var(--gold)", textTransform:"uppercase",
+                  letterSpacing:1.5, marginBottom:10 }}>
+                  ⏳ Candidatures en attente de validation
+                </div>
+                {candidatsAttente.map(c => (
+                  <div key={c.id} style={{
+                    display:"flex", alignItems:"center", justifyContent:"space-between",
+                    background:"rgba(255,193,7,0.05)", border:"1px solid rgba(255,193,7,0.15)",
+                    borderRadius:10, padding:"12px 16px", marginBottom:8
+                  }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <div className="av" style={{ background:"#4f6ef7", width:32, height:32, fontSize:12 }}>
+                        {c.nom[0]}
+                      </div>
+                      <span style={{ fontWeight:500, fontSize:14 }}>{c.nom}</span>
+                    </div>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <button className="btn btn-teal btn-xs"
+                        onClick={() => validerCandidat(elec, c.id, "validé")}>✓ Valider</button>
+                      <button className="btn btn-rose btn-xs"
+                        onClick={() => validerCandidat(elec, c.id, "refusé")}>✗ Refuser</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Bouton "Me proposer" (membre du club) ── */}
+            {elec.statut === "candidatures" && estMembre && !estCandid && !isAdmin && (
+              <button className="btn btn-gold" style={{ marginBottom:20 }} onClick={() => seProposer(elec)}>
+                ✋ Me proposer comme candidat
+              </button>
+            )}
+
+            {elec.statut === "candidatures" && estCandid && (
+              <div className="alert alert-success" style={{ marginBottom:16 }}>
+                ✓ Votre candidature est en attente de validation par l'administrateur.
+              </div>
+            )}
+
+            {/* ── Liste des candidats validés ── */}
+            {candidatsValides.length === 0 ? (
+              <div style={{ color:"var(--text3)", fontSize:13, textAlign:"center", padding:"16px 0" }}>
+                {elec.statut === "candidatures"
+                  ? "Aucun candidat validé pour le moment"
+                  : "Aucun candidat pour cette élection"}
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize:12, fontWeight:600, color:"var(--text3)", textTransform:"uppercase",
+                  letterSpacing:1.5, marginBottom:12 }}>
+                  {elec.statut === "candidatures" ? "Candidats validés" : "Résultats"}
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {sorted.map((c, i) => {
+                    const pct      = total > 0 ? Math.round((c.votes || 0) / total * 100) : 0;
+                    const isWinner = elec.statut === "cloturée" && i === 0 && c.votes > 0;
+                    return (
+                      <div key={c.id} style={{
+                        background: isWinner ? "rgba(255,193,7,0.07)" : "var(--surface)",
+                        border:`1px solid ${isWinner ? "rgba(255,193,7,0.25)" : "var(--border)"}`,
+                        borderRadius:12, padding:"14px 18px",
+                        display:"flex", alignItems:"center", gap:16
+                      }}>
+                        {/* Rang */}
+                        <div style={{
+                          width:32, height:32, borderRadius:9, flexShrink:0,
+                          background: isWinner ? "rgba(255,193,7,0.15)" : "rgba(255,255,255,0.05)",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:14, fontWeight:700,
+                          color: isWinner ? "var(--gold)" : "var(--text3)"
+                        }}>
+                          {isWinner ? "🥇" : `#${i+1}`}
+                        </div>
+
+                        {/* Nom + barre */}
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                            <span style={{ fontWeight:500, fontSize:14,
+                              color: isWinner ? "var(--gold2)" : "var(--text)" }}>
+                              {c.nom}
+                            </span>
+                            {elec.statut !== "candidatures" && (
+                              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"var(--text2)" }}>
+                                {c.votes||0} vote{(c.votes||0)>1?"s":""} — {pct}%
+                              </span>
+                            )}
+                          </div>
+                          {elec.statut !== "candidatures" && (
+                            <div className="prog-track">
+                              <div className="prog-fill" style={{
+                                width:`${pct}%`,
+                                background: isWinner
+                                  ? "linear-gradient(90deg,#FFC107,#FFD54F)"
+                                  : "linear-gradient(90deg,#4ecdc4,#60aff0)"
+                              }}/>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bouton voter */}
+                        {elec.statut === "vote" && !dejaVote && estMembre && (
+                          <button className="btn btn-gold btn-sm" style={{ flexShrink:0 }}
+                            onClick={() => voter(elec, c.id)}>
+                            Voter
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
