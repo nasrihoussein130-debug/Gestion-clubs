@@ -1631,18 +1631,18 @@ const Paiements = () => {
             )}
           </div>
 
-          {/* Historique complet */}
+         {/* Historique complet */}
           <div className="section-header">
             <div className="section-title">📋 Historique complet</div>
           </div>
           <div className="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Étudiant</th><th>Club</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+                <tr><th>Étudiant</th><th>Club</th><th>Montant</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 {paiements.length === 0 ? (
-                  <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>
+                  <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>
                     Aucun paiement enregistré
                   </td></tr>
                 ) : paiements.map(p => (
@@ -1664,6 +1664,15 @@ const Paiements = () => {
                     </td>
                     <td style={{ color: "var(--text3)", fontSize: 12 }}>
                       {p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}
+                    </td>
+                    <td>
+                      <button className="btn btn-rose btn-xs"
+                        onClick={() => {
+                          deleteDoc(doc(db, "paiements", p.id));
+                          notify("Paiement supprimé.");
+                        }}>
+                        🗑 Supprimer
+                      </button>
                     </td>
                   </tr>
                 ))}
