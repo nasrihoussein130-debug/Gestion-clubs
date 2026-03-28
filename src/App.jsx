@@ -1676,7 +1676,7 @@ const Paiements = () => {
   );
 };
 
-  };
+  
 
   /* ─ ADMIN ─ */
   const Admin = () => (
