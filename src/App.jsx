@@ -1369,58 +1369,313 @@ const Votes = () => {
 };
 
   /* ─ PAIEMENTS ─ */
-  const Paiements = () => {
-    const [selClub,setSelClub]=useState(""); const [montant,setMontant]=useState(""); const [msg,setMsg]=useState("");
-    const mesPaie = paiements.filter(p=>p.etudiantId===user.uid);
-    async function payer(){
-      if(!selClub||!montant){setMsg("error:Remplis tous les champs.");return;}
-      await addDoc(collection(db,"paiements"),{etudiantId:user.uid,clubId:selClub,montant:parseFloat(montant),date:new Date(),statut:"en attente"});
-      setMsg("ok:Paiement soumis !");setSelClub("");setMontant("");setTimeout(()=>setMsg(""),3000);
-    }
-    const ok=msg.startsWith("ok:");
-    return (
-      <div style={{animation:"slideUp 0.35s ease"}}>
-        <div className="page-header"><div><div className="page-eyebrow">Cotisations</div><div className="page-title">Paiements</div><div className="page-sub">Gérez vos cotisations aux clubs</div></div></div>
-        <div className="form-card" style={{marginBottom:28}}>
-          <div className="form-title">Nouveau paiement</div>
-          {msg && <div className={`alert ${ok?"alert-success":"alert-error"}`}>{msg.slice(3)}</div>}
-          <div className="frow">
-            <div className="fgroup"><label className="flabel">Club</label>
-              <select className="fselect" value={selClub} onChange={e=>setSelClub(e.target.value)}>
-                <option value="">— Sélectionner —</option>
-                {clubs.map(c=><option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-              </select>
-            </div>
-            <div className="fgroup"><label className="flabel">Montant (DJF)</label><input className="finput" type="number" placeholder="Ex : 2000" value={montant} onChange={e=>setMontant(e.target.value)}/></div>
-          </div>
-          <div className="form-actions">
-            <button className="btn btn-gold" onClick={payer}>Soumettre le paiement</button>
-            <button className="btn btn-ghost" onClick={()=>{setSelClub("");setMontant("");}}>Réinitialiser</button>
-          </div>
+const Paiements = () => {
+  const [paiements, setPaiements] = useState([]);
+  const [cotisations, setCotisations] = useState({}); // { clubId: montant }
+  const [editCotis, setEditCotis] = useState({});
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    const u = onSnapshot(collection(db, "paiements"), s =>
+      setPaiements(s.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
+    return () => u();
+  }, []);
+
+  useEffect(() => {
+    const u = onSnapshot(collection(db, "cotisations"), s => {
+      const map = {};
+      s.docs.forEach(d => { map[d.id] = d.data().montant; });
+      setCotisations(map);
+    });
+    return () => u();
+  }, []);
+
+  const notify2 = (txt, ok = true) => {
+    setMsg((ok ? "ok:" : "error:") + txt);
+    setTimeout(() => setMsg(""), 3500);
+  };
+  const msgOk = msg.startsWith("ok:");
+
+  // ── Membre connecté ──
+  const monProfil = membres.find(m => m.etudiantId === user.uid);
+  const monClub   = clubs.find(c => c.id === monProfil?.clubId);
+  const montantDu = monClub ? (cotisations[monClub.id] || 0) : 0;
+  const monPaiement = paiements.find(p =>
+    p.etudiantId === user.uid && p.clubId === monProfil?.clubId
+  );
+
+  // ── Déclarer un paiement (étudiant) ──
+  async function declarerPaiement() {
+    if (!monProfil) { notify2("Vous n'êtes inscrit à aucun club.", false); return; }
+    if (monPaiement) { notify2("Vous avez déjà soumis un paiement.", false); return; }
+    if (!montantDu)  { notify2("Aucun montant défini pour ce club.", false); return; }
+    await addDoc(collection(db, "paiements"), {
+      etudiantId: user.uid,
+      nom:        monProfil.nom,
+      clubId:     monProfil.clubId,
+      montant:    montantDu,
+      statut:     "en attente",
+      date:       new Date(),
+    });
+    notify2("Paiement déclaré ! En attente de validation.");
+  }
+
+  // ── Valider / Rejeter un paiement (admin) ──
+  async function changerStatut(id, statut) {
+    await updateDoc(doc(db, "paiements", id), { statut });
+    notify2(statut === "payé" ? "Paiement validé ✓" : "Paiement rejeté.");
+  }
+
+  // ── Définir montant par club (admin) ──
+  async function sauvegarderMontant(clubId) {
+    const montant = parseFloat(editCotis[clubId]);
+    if (!montant || montant <= 0) { notify2("Montant invalide.", false); return; }
+    await setDoc(doc(db, "cotisations", clubId), { montant });
+    notify2("Montant mis à jour !");
+    setEditCotis(p => ({ ...p, [clubId]: "" }));
+  }
+
+  // ── Stats admin ──
+  const totalParClub = clubs.map(c => {
+    const payes = paiements.filter(p => p.clubId === c.id && p.statut === "payé");
+    return { ...c, total: payes.reduce((s, p) => s + (p.montant || 0), 0), nb: payes.length };
+  });
+
+  return (
+    <div style={{ animation: "slideUp 0.35s ease" }}>
+      <div className="page-header">
+        <div>
+          <div className="page-eyebrow">Cotisations</div>
+          <div className="page-title">Paiements</div>
+          <div className="page-sub">Gestion des cotisations aux clubs</div>
         </div>
-        <div className="section-header"><div className="section-title">Historique</div></div>
-        {mesPaie.length===0 ? (
-          <div className="empty-state"><div className="empty-icon">💸</div><div className="empty-text">Aucun paiement enregistré</div></div>
-        ) : (
+      </div>
+
+      {msg && (
+        <div className={`alert ${msgOk ? "alert-success" : "alert-error"}`}>
+          <span>{msgOk ? "✓" : "✗"}</span>{msg.slice(3)}
+        </div>
+      )}
+
+      {/* ══ VUE ÉTUDIANT ══ */}
+      {!isAdmin && (
+        <>
+          {/* Carte ma cotisation */}
+          <div className="card" style={{ padding: 28, marginBottom: 24 }}>
+            {!monProfil ? (
+              <div className="empty-state">
+                <div className="empty-icon">💳</div>
+                <div className="empty-text">Vous n'êtes inscrit à aucun club</div>
+                <div className="empty-sub">Inscrivez-vous d'abord à un club pour payer votre cotisation</div>
+                <button className="btn btn-gold" style={{ marginTop: 16 }} onClick={() => setPage("inscription")}>
+                  S'inscrire à un club
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+                      Ma cotisation
+                    </div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700, color: "var(--text)" }}>
+                      {monClub?.icon} {monClub?.name}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+                      Montant dû
+                    </div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, fontWeight: 700, color: "var(--gold)" }}>
+                      {montantDu > 0 ? `${montantDu.toLocaleString()} DJF` : "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Statut paiement */}
+                {!monPaiement ? (
+                  <div style={{
+                    background: "rgba(255,193,7,0.05)", border: "1px solid rgba(255,193,7,0.15)",
+                    borderRadius: 12, padding: "20px 24px", marginBottom: 20,
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 4 }}>Cotisation non payée</div>
+                      <div style={{ fontSize: 13, color: "var(--text3)" }}>
+                        Payez votre cotisation en espèces auprès de l'administration, puis déclarez-le ici.
+                      </div>
+                    </div>
+                    <button className="btn btn-gold" style={{ flexShrink: 0 }} onClick={declarerPaiement}>
+                      ✓ J'ai payé
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{
+                    borderRadius: 12, padding: "20px 24px",
+                    background: monPaiement.statut === "payé"
+                      ? "rgba(78,205,196,0.08)" : monPaiement.statut === "rejeté"
+                      ? "rgba(255,107,138,0.08)" : "rgba(255,193,7,0.06)",
+                    border: `1px solid ${monPaiement.statut === "payé"
+                      ? "rgba(78,205,196,0.2)" : monPaiement.statut === "rejeté"
+                      ? "rgba(255,107,138,0.2)" : "rgba(255,193,7,0.15)"}`,
+                    display: "flex", alignItems: "center", gap: 16
+                  }}>
+                    <span style={{ fontSize: 32 }}>
+                      {monPaiement.statut === "payé" ? "✅" : monPaiement.statut === "rejeté" ? "❌" : "⏳"}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4,
+                        color: monPaiement.statut === "payé" ? "var(--teal)"
+                          : monPaiement.statut === "rejeté" ? "var(--rose)" : "var(--gold)" }}>
+                        {monPaiement.statut === "payé" ? "Paiement validé par l'admin"
+                          : monPaiement.statut === "rejeté" ? "Paiement rejeté — contactez l'administration"
+                          : "En attente de validation"}
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--text3)" }}>
+                        {monPaiement.montant?.toLocaleString()} DJF —{" "}
+                        {monPaiement.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ══ VUE ADMIN ══ */}
+      {isAdmin && (
+        <>
+          {/* Stats totaux par club */}
+          <div style={{ marginBottom: 28 }}>
+            <div className="section-header">
+              <div className="section-title">💰 Total collecté par club</div>
+            </div>
+            <div className="adm-grid">
+              {totalParClub.map(c => (
+                <div key={c.id} className="adm-card" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <span style={{ fontSize: 28 }}>{c.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{c.name}</div>
+                    <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 700, color: "var(--gold)" }}>
+                      {c.total.toLocaleString()} DJF
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>
+                      {c.nb} paiement{c.nb > 1 ? "s" : ""} validé{c.nb > 1 ? "s" : ""}
+                    </div>
+                  </div>
+                  {/* Définir montant */}
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <input
+                      className="finput" type="number"
+                      style={{ width: 100, padding: "7px 10px", fontSize: 13 }}
+                      placeholder={cotisations[c.id] ? `${cotisations[c.id]} DJF` : "Montant"}
+                      value={editCotis[c.id] || ""}
+                      onChange={e => setEditCotis(p => ({ ...p, [c.id]: e.target.value }))}
+                    />
+                    <button className="btn btn-teal btn-xs" onClick={() => sauvegarderMontant(c.id)}>
+                      ✓
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Liste paiements en attente */}
+          <div className="section-header">
+            <div className="section-title">⏳ Paiements en attente</div>
+            <span className="badge badge-gold">
+              {paiements.filter(p => p.statut === "en attente").length} en attente
+            </span>
+          </div>
+          <div style={{ marginBottom: 28 }}>
+            {paiements.filter(p => p.statut === "en attente").length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">✅</div>
+                <div className="empty-text">Aucun paiement en attente</div>
+              </div>
+            ) : (
+              <div className="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Étudiant</th><th>Club</th><th>Montant</th><th>Date</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {paiements.filter(p => p.statut === "en attente").map(p => (
+                      <tr key={p.id}>
+                        <td><div className="td-name">
+                          <div className="av" style={{ background: "#4f6ef7", width: 32, height: 32, fontSize: 12 }}>
+                            {(p.nom || "?")[0]}
+                          </div>
+                          {p.nom}
+                        </div></td>
+                        <td><span className="badge badge-sky">{nomClub(p.clubId)}</span></td>
+                        <td style={{ fontFamily: "'JetBrains Mono',monospace", color: "var(--gold)", fontWeight: 600 }}>
+                          {p.montant?.toLocaleString()} DJF
+                        </td>
+                        <td style={{ color: "var(--text3)", fontSize: 12 }}>
+                          {p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}
+                        </td>
+                        <td><div style={{ display: "flex", gap: 6 }}>
+                          <button className="btn btn-teal btn-xs" onClick={() => changerStatut(p.id, "payé")}>✓ Valider</button>
+                          <button className="btn btn-rose btn-xs" onClick={() => changerStatut(p.id, "rejeté")}>✗ Rejeter</button>
+                        </div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Historique complet */}
+          <div className="section-header">
+            <div className="section-title">📋 Historique complet</div>
+          </div>
           <div className="tbl-wrap">
             <table>
-              <thead><tr><th>Club</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+              <thead>
+                <tr><th>Étudiant</th><th>Club</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+              </thead>
               <tbody>
-                {mesPaie.map(p=>(
+                {paiements.length === 0 ? (
+                  <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text3)", padding: 32 }}>
+                    Aucun paiement enregistré
+                  </td></tr>
+                ) : paiements.map(p => (
                   <tr key={p.id}>
-                    {/* ✅ CORRIGÉ : affiche le nom via nomClub(p.clubId) */}
-                    <td>{nomClub(p.clubId)}</td>
-                    <td style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:500,color:"var(--gold)"}}>{p.montant} DJF</td>
-                    <td><span className={`badge ${p.statut==="payé"?"badge-teal":"badge-gold"}`}>{p.statut}</span></td>
-                    <td style={{color:"var(--text3)"}}>{p.date?.toDate?.().toLocaleDateString("fr-FR")||"—"}</td>
+                    <td><div className="td-name">
+                      <div className="av" style={{ background: "#4f6ef7", width: 32, height: 32, fontSize: 12 }}>
+                        {(p.nom || "?")[0]}
+                      </div>
+                      {p.nom}
+                    </div></td>
+                    <td><span className="badge badge-sky">{nomClub(p.clubId)}</span></td>
+                    <td style={{ fontFamily: "'JetBrains Mono',monospace", color: "var(--gold)", fontWeight: 600 }}>
+                      {p.montant?.toLocaleString()} DJF
+                    </td>
+                    <td>
+                      <span className={`badge ${p.statut === "payé" ? "badge-teal" : p.statut === "rejeté" ? "badge-rose" : "badge-gold"}`}>
+                        {p.statut === "payé" ? "✓ Validé" : p.statut === "rejeté" ? "✗ Rejeté" : "⏳ En attente"}
+                      </span>
+                    </td>
+                    <td style={{ color: "var(--text3)", fontSize: 12 }}>
+                      {p.date?.toDate?.().toLocaleDateString("fr-FR") || "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
-    );
+        </>
+      )}
+    </div>
+  );
+};
+
   };
 
   /* ─ ADMIN ─ */
