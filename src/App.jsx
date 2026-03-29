@@ -1016,13 +1016,13 @@ export default function App() {
 
 /* ─ VOTES ─ */
 const Votes = () => {
-  const [elections, setElections]   = useState([]);
-  const [newElec, setNewElec]       = useState({ clubId: "", titre: "" });
-  const [msg, setMsg]               = useState("");
+  const [sondages, setSondages] = useState([]);
+  const [newSondage, setNewSondage] = useState({ clubId: "", question: "", options: ["", ""] });
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    const u = onSnapshot(collection(db, "elections"), s =>
-      setElections(s.docs.map(d => ({ id: d.id, ...d.data() })))
+    const u = onSnapshot(collection(db, "sondages"), s =>
+      setSondages(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
     return () => u();
   }, []);
@@ -1033,112 +1033,92 @@ const Votes = () => {
   };
   const msgOk = msg.startsWith("ok:");
 
-  // ── Membre connecté ──
   const monProfil = membres.find(m => m.etudiantId === user.uid);
 
-  // ── Créer une élection (admin) ──
-  async function creerElection() {
-    if (!newElec.clubId || !newElec.titre) {
-      notify2("Club et titre requis.", false); return;
+  // ── Ajouter une option ──
+  const ajouterOption = () => {
+    if (newSondage.options.length >= 6) { notify2("Maximum 6 options.", false); return; }
+    setNewSondage(p => ({ ...p, options: [...p.options, ""] }));
+  };
+
+  // ── Modifier une option ──
+  const modifierOption = (i, val) => {
+    const opts = [...newSondage.options];
+    opts[i] = val;
+    setNewSondage(p => ({ ...p, options: opts }));
+  };
+
+  // ── Supprimer une option ──
+  const supprimerOption = (i) => {
+    if (newSondage.options.length <= 2) { notify2("Minimum 2 options.", false); return; }
+    setNewSondage(p => ({ ...p, options: p.options.filter((_, idx) => idx !== i) }));
+  };
+
+  // ── Créer un sondage (admin) ──
+  async function creerSondage() {
+    if (!newSondage.clubId || !newSondage.question) {
+      notify2("Club et question requis.", false); return;
     }
-    await addDoc(collection(db, "elections"), {
-      clubId:      newElec.clubId,
-      titre:       newElec.titre,
-      statut:      "candidatures",   // candidatures → vote → cloturée
-      candidats:   [],               // { membreId, nom, statut: "attente"|"validé"|"refusé", votes }
-      votants:     [],
-      createdAt:   new Date(),
+    const optsValides = newSondage.options.filter(o => o.trim() !== "");
+    if (optsValides.length < 2) {
+      notify2("Au moins 2 activités à proposer.", false); return;
+    }
+    await addDoc(collection(db, "sondages"), {
+      clubId:   newSondage.clubId,
+      question: newSondage.question,
+      options:  optsValides.map(o => ({ label: o, votes: 0 })),
+      votants:  [],
+      statut:   "ouvert",
+      createdAt: new Date(),
     });
-    notify2("Élection créée — en attente de candidatures !");
-    setNewElec({ clubId: "", titre: "" });
+    notify2("Sondage créé !");
+    setNewSondage({ clubId: "", question: "", options: ["", ""] });
   }
 
-  // ── Se proposer comme candidat ──
-  async function seProposer(elec) {
-    if (!monProfil) { notify2("Vous n'êtes pas encore inscrit à un club.", false); return; }
-    if (monProfil.clubId !== elec.clubId) {
+  // ── Voter pour une activité ──
+  async function voter(sondage, optionIndex) {
+    if (!monProfil || monProfil.clubId !== sondage.clubId) {
       notify2("Vous n'êtes pas membre de ce club.", false); return;
     }
-    const dejaCandidrat = (elec.candidats || []).some(c => c.membreId === user.uid);
-    if (dejaCandidrat) { notify2("Vous êtes déjà candidat.", false); return; }
-    const updated = [...(elec.candidats || []), {
-      membreId: user.uid,
-      nom:      monProfil.nom,
-      statut:   "attente",
-      votes:    0,
-      id:       Date.now().toString(),
-    }];
-    await updateDoc(doc(db, "elections", elec.id), { candidats: updated });
-    notify2("Candidature soumise ! En attente de validation.");
-  }
-
-  // ── Valider ou refuser un candidat (admin) ──
-  async function validerCandidat(elec, candidatId, decision) {
-    const updated = (elec.candidats || []).map(c =>
-      c.id === candidatId ? { ...c, statut: decision } : c
-    );
-    await updateDoc(doc(db, "elections", elec.id), { candidats: updated });
-    notify2(decision === "validé" ? "Candidat validé !" : "Candidat refusé.");
-  }
-
-  // ── Lancer le vote (admin) ──
-  async function lancerVote(elec) {
-    const valides = (elec.candidats || []).filter(c => c.statut === "validé");
-    if (valides.length < 2) {
-      notify2("Il faut au moins 2 candidats validés pour lancer le vote.", false); return;
+    if ((sondage.votants || []).includes(user.uid)) {
+      notify2("Vous avez déjà voté.", false); return;
     }
-    await updateDoc(doc(db, "elections", elec.id), { statut: "vote" });
-    notify2("Vote lancé ! Les membres peuvent maintenant voter.");
-  }
-
-  // ── Voter pour un candidat ──
-  async function voter(elec, candidatId) {
-    if (!monProfil || monProfil.clubId !== elec.clubId) {
-      notify2("Vous n'êtes pas membre de ce club.", false); return;
+    if (sondage.statut === "fermé") {
+      notify2("Ce sondage est terminé.", false); return;
     }
-    const dejaVote = (elec.votants || []).includes(user.uid);
-    if (dejaVote) { notify2("Vous avez déjà voté.", false); return; }
-    const updated = (elec.candidats || []).map(c =>
-      c.id === candidatId ? { ...c, votes: (c.votes || 0) + 1 } : c
+    const updatedOptions = sondage.options.map((o, i) =>
+      i === optionIndex ? { ...o, votes: (o.votes || 0) + 1 } : o
     );
-    await updateDoc(doc(db, "elections", elec.id), {
-      candidats: updated,
-      votants:   [...(elec.votants || []), user.uid],
+    await updateDoc(doc(db, "sondages", sondage.id), {
+      options: updatedOptions,
+      votants: [...(sondage.votants || []), user.uid],
     });
     notify2("Vote enregistré !");
   }
 
-  // ── Clôturer l'élection (admin) ──
-  async function cloturer(elec) {
-    const valides = (elec.candidats || []).filter(c => c.statut === "validé");
-    const gagnant = [...valides].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
-    await updateDoc(doc(db, "elections", elec.id), {
-      statut:  "cloturée",
-      gagnant: gagnant?.nom || "—",
+  // ── Fermer un sondage (admin) ──
+  async function fermerSondage(sondage) {
+    const gagnant = [...sondage.options].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
+    await updateDoc(doc(db, "sondages", sondage.id), {
+      statut: "fermé",
+      gagnant: gagnant?.label || "—",
     });
-    notify2(`Élection clôturée ! Président élu : ${gagnant?.nom || "—"}`);
+    notify2(`Sondage fermé ! Activité choisie : ${gagnant?.label}`);
   }
 
-  // ── Supprimer une élection (admin) ──
-  async function supprimerElection(id) {
-    await deleteDoc(doc(db, "elections", id));
-    notify2("Élection supprimée.");
+  // ── Supprimer un sondage (admin) ──
+  async function supprimerSondage(id) {
+    await deleteDoc(doc(db, "sondages", id));
+    notify2("Sondage supprimé.");
   }
-
-  // ── Label du statut ──
-  const statutLabel = {
-    candidatures: { txt: "📋 Candidatures ouvertes", cls: "badge-sky"    },
-    vote:         { txt: "🗳️ Vote en cours",          cls: "badge-teal"   },
-    cloturée:     { txt: "🔒 Clôturée",               cls: "badge-rose"   },
-  };
 
   return (
     <div style={{ animation: "slideUp 0.35s ease" }}>
       <div className="page-header">
         <div>
           <div className="page-eyebrow">Démocratie étudiante</div>
-          <div className="page-title">Élections des présidents</div>
-          <div className="page-sub">Candidatez et votez pour élire le président de votre club</div>
+          <div className="page-title">Votes des activités</div>
+          <div className="page-sub">Votez pour choisir les prochaines activités de votre club</div>
         </div>
       </div>
 
@@ -1148,217 +1128,200 @@ const Votes = () => {
         </div>
       )}
 
-      {/* ══ PANNEAU ADMIN : créer une élection ══ */}
+      {/* ══ PANNEAU ADMIN : créer un sondage ══ */}
       {isAdmin && (
         <div className="adm-card" style={{ marginBottom: 28 }}>
-          <div className="adm-title">⚙ Créer une élection</div>
+          <div className="adm-title">⚙ Proposer des activités à voter</div>
           <div className="frow">
             <div className="fgroup">
               <label className="flabel">Club</label>
-              <select className="fselect" value={newElec.clubId}
-                onChange={e => setNewElec({ ...newElec, clubId: e.target.value })}>
+              <select className="fselect" value={newSondage.clubId}
+                onChange={e => setNewSondage(p => ({ ...p, clubId: e.target.value }))}>
                 <option value="">— Choisir un club —</option>
                 {clubs.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
               </select>
             </div>
             <div className="fgroup">
-              <label className="flabel">Titre</label>
-              <input className="finput" placeholder="Ex : Élection présidentielle 2026"
-                value={newElec.titre}
-                onChange={e => setNewElec({ ...newElec, titre: e.target.value })} />
+              <label className="flabel">Question</label>
+              <input className="finput"
+                placeholder="Ex : Quelle activité pour ce mois ?"
+                value={newSondage.question}
+                onChange={e => setNewSondage(p => ({ ...p, question: e.target.value }))} />
             </div>
           </div>
-          <button className="btn btn-gold" onClick={creerElection}>⊕ Lancer l'élection</button>
+
+          {/* Options */}
+          <div className="fgroup">
+            <label className="flabel">Activités proposées</label>
+            {newSondage.options.map((opt, i) => (
+              <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input className="finput"
+                  placeholder={`Activité ${i + 1} (ex: Hackathon, Sortie...)`}
+                  value={opt}
+                  onChange={e => modifierOption(i, e.target.value)}
+                  style={{ flex: 1 }} />
+                {newSondage.options.length > 2 && (
+                  <button className="btn btn-rose btn-xs"
+                    onClick={() => supprimerOption(i)}>✕</button>
+                )}
+              </div>
+            ))}
+            <button className="btn btn-ghost btn-sm" onClick={ajouterOption}
+              style={{ marginTop: 4 }}>
+              ⊕ Ajouter une activité
+            </button>
+          </div>
+
+          <button className="btn btn-gold" onClick={creerSondage}>
+            🗳️ Lancer le vote
+          </button>
         </div>
       )}
 
-      {/* ══ LISTE DES ÉLECTIONS ══ */}
-      {elections.length === 0 ? (
+      {/* ══ LISTE DES SONDAGES ══ */}
+      {sondages.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🗳️</div>
-          <div className="empty-text">Aucune élection en cours</div>
-          <div className="empty-sub">L'administrateur peut en créer depuis ce panneau</div>
+          <div className="empty-text">Aucun vote en cours</div>
+          <div className="empty-sub">L'administrateur peut proposer des activités à voter</div>
         </div>
-      ) : elections.map(elec => {
-        const candidatsValides = (elec.candidats || []).filter(c => c.statut === "validé");
-        const candidatsAttente = (elec.candidats || []).filter(c => c.statut === "attente");
-        const total     = candidatsValides.reduce((s, c) => s + (c.votes || 0), 0);
-        const dejaVote  = (elec.votants || []).includes(user.uid);
-        const estCandid = (elec.candidats || []).some(c => c.membreId === user.uid);
-        const estMembre = monProfil?.clubId === elec.clubId;
-        const sl        = statutLabel[elec.statut] || statutLabel["candidatures"];
-        const sorted    = [...candidatsValides].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      ) : sondages.map(sondage => {
+        const total     = (sondage.options || []).reduce((s, o) => s + (o.votes || 0), 0);
+        const dejaVote  = (sondage.votants || []).includes(user.uid);
+        const estMembre = monProfil?.clubId === sondage.clubId;
+        const ferme     = sondage.statut === "fermé";
+        const sorted    = [...(sondage.options || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 
         return (
-          <div key={elec.id} className="card" style={{ padding: 26, marginBottom: 20 }}>
+          <div key={sondage.id} className="card" style={{ padding: 26, marginBottom: 20 }}>
 
-            {/* ── En-tête ── */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+            {/* En-tête */}
+            <div style={{ display:"flex", justifyContent:"space-between",
+              alignItems:"flex-start", marginBottom:20 }}>
               <div>
-                <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase", letterSpacing:2, marginBottom:4 }}>
-                  {nomClub(elec.clubId)}
+                <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase",
+                  letterSpacing:2, marginBottom:4 }}>
+                  {nomClub(sondage.clubId)}
                 </div>
-                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19, fontWeight:600, color:"var(--text)" }}>
-                  {elec.titre}
+                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19,
+                  fontWeight:600, color:"var(--text)" }}>
+                  {sondage.question}
                 </div>
-                <div style={{ marginTop:10, display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
-                  <span className={`badge ${sl.cls}`}>{sl.txt}</span>
-                  {elec.statut === "vote" &&
-                    <span style={{ fontSize:12, color:"var(--text3)" }}>{total} vote{total>1?"s":""} exprimé{total>1?"s":""}</span>}
-                  {dejaVote && elec.statut==="vote" &&
+                <div style={{ marginTop:10, display:"flex", gap:8, flexWrap:"wrap" }}>
+                  <span className={`badge ${ferme ? "badge-rose" : "badge-teal"}`}>
+                    {ferme ? "🔒 Terminé" : "🗳️ Vote ouvert"}
+                  </span>
+                  <span style={{ fontSize:12, color:"var(--text3)" }}>
+                    {total} vote{total > 1 ? "s" : ""} exprimé{total > 1 ? "s" : ""}
+                  </span>
+                  {dejaVote && !ferme &&
                     <span className="badge badge-gold">✓ Vous avez voté</span>}
-                  {estCandid &&
-                    <span className="badge badge-violet">📋 Vous êtes candidat</span>}
                 </div>
               </div>
 
-              {/* Actions admin */}
               {isAdmin && (
                 <div style={{ display:"flex", gap:8 }}>
-                  {elec.statut === "candidatures" &&
-                    <button className="btn btn-teal btn-sm" onClick={() => lancerVote(elec)}>
-                      🗳️ Lancer le vote
-                    </button>}
-                  {elec.statut === "vote" &&
-                    <button className="btn btn-gold btn-sm" onClick={() => cloturer(elec)}>
-                      🏆 Clôturer
-                    </button>}
-                  <button className="btn btn-rose btn-sm" onClick={() => supprimerElection(elec.id)}>🗑</button>
+                  {!ferme && (
+                    <button className="btn btn-teal btn-sm"
+                      onClick={() => fermerSondage(sondage)}>
+                      🔒 Fermer
+                    </button>
+                  )}
+                  <button className="btn btn-rose btn-sm"
+                    onClick={() => supprimerSondage(sondage.id)}>🗑</button>
                 </div>
               )}
             </div>
 
-            {/* ── Résultat final ── */}
-            {elec.statut === "cloturée" && (
+            {/* Activité gagnante */}
+            {ferme && sondage.gagnant && (
               <div style={{
                 background:"rgba(255,193,7,0.08)", border:"1px solid rgba(255,193,7,0.25)",
                 borderRadius:14, padding:"16px 22px", marginBottom:22,
                 display:"flex", alignItems:"center", gap:16
               }}>
-                <span style={{ fontSize:38 }}>🏆</span>
+                <span style={{ fontSize:36 }}>🏆</span>
                 <div>
-                  <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase", letterSpacing:1.5 }}>Président élu</div>
-                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:22, fontWeight:700, color:"var(--gold)" }}>
-                    {elec.gagnant}
+                  <div style={{ fontSize:11, color:"var(--text3)", textTransform:"uppercase",
+                    letterSpacing:1.5 }}>Activité choisie</div>
+                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:20,
+                    fontWeight:700, color:"var(--gold)" }}>
+                    {sondage.gagnant}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ── Candidatures en attente (admin seulement) ── */}
-            {isAdmin && elec.statut === "candidatures" && candidatsAttente.length > 0 && (
-              <div style={{ marginBottom:20 }}>
-                <div style={{ fontSize:12, fontWeight:600, color:"var(--gold)", textTransform:"uppercase",
-                  letterSpacing:1.5, marginBottom:10 }}>
-                  ⏳ Candidatures en attente de validation
-                </div>
-                {candidatsAttente.map(c => (
-                  <div key={c.id} style={{
-                    display:"flex", alignItems:"center", justifyContent:"space-between",
-                    background:"rgba(255,193,7,0.05)", border:"1px solid rgba(255,193,7,0.15)",
-                    borderRadius:10, padding:"12px 16px", marginBottom:8
+            {/* Options */}
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {sorted.map((opt, i) => {
+                const pct      = total > 0 ? Math.round((opt.votes || 0) / total * 100) : 0;
+                const isWinner = ferme && i === 0 && opt.votes > 0;
+                return (
+                  <div key={i} style={{
+                    background: isWinner ? "rgba(255,193,7,0.07)" : "var(--surface)",
+                    border:`1px solid ${isWinner ? "rgba(255,193,7,0.25)" : "var(--border)"}`,
+                    borderRadius:12, padding:"14px 18px",
+                    display:"flex", alignItems:"center", gap:16,
+                    transition:"all 0.2s"
                   }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                      <div className="av" style={{ background:"#4f6ef7", width:32, height:32, fontSize:12 }}>
-                        {c.nom[0]}
+                    {/* Icône rang */}
+                    <div style={{
+                      width:32, height:32, borderRadius:9, flexShrink:0,
+                      background: isWinner ? "rgba(255,193,7,0.15)" : "rgba(255,255,255,0.05)",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:16, fontWeight:700,
+                      color: isWinner ? "var(--gold)" : "var(--text3)"
+                    }}>
+                      {isWinner ? "🥇" : `#${i + 1}`}
+                    </div>
+
+                    {/* Label + barre */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                        <span style={{ fontWeight:500, fontSize:14,
+                          color: isWinner ? "var(--gold2)" : "var(--text)" }}>
+                          {opt.label}
+                        </span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace",
+                          fontSize:12, color:"var(--text2)" }}>
+                          {opt.votes || 0} vote{(opt.votes||0) > 1 ? "s" : ""} — {pct}%
+                        </span>
                       </div>
-                      <span style={{ fontWeight:500, fontSize:14 }}>{c.nom}</span>
+                      <div className="prog-track">
+                        <div className="prog-fill" style={{
+                          width:`${pct}%`,
+                          background: isWinner
+                            ? "linear-gradient(90deg,#FFC107,#FFD54F)"
+                            : "linear-gradient(90deg,#4ecdc4,#60aff0)"
+                        }}/>
+                      </div>
                     </div>
-                    <div style={{ display:"flex", gap:8 }}>
-                      <button className="btn btn-teal btn-xs"
-                        onClick={() => validerCandidat(elec, c.id, "validé")}>✓ Valider</button>
-                      <button className="btn btn-rose btn-xs"
-                        onClick={() => validerCandidat(elec, c.id, "refusé")}>✗ Refuser</button>
-                    </div>
+
+                    {/* Bouton voter */}
+                    {!ferme && !dejaVote && estMembre && (
+                      <button className="btn btn-gold btn-sm" style={{ flexShrink:0 }}
+                        onClick={() => voter(sondage, sondage.options.indexOf(opt))}>
+                        Voter
+                      </button>
+                    )}
                   </div>
-                ))}
+                );
+              })}
+            </div>
+
+            {/* Message si pas membre */}
+            {!estMembre && !isAdmin && (
+              <div style={{ textAlign:"center", fontSize:13,
+                color:"var(--text3)", marginTop:16 }}>
+                Vous n'êtes pas membre de ce club
               </div>
             )}
 
-            {/* ── Bouton "Me proposer" (membre du club) ── */}
-            {elec.statut === "candidatures" && estMembre && !estCandid && !isAdmin && (
-              <button className="btn btn-gold" style={{ marginBottom:20 }} onClick={() => seProposer(elec)}>
-                ✋ Me proposer comme candidat
-              </button>
-            )}
-
-            {elec.statut === "candidatures" && estCandid && (
-              <div className="alert alert-success" style={{ marginBottom:16 }}>
-                ✓ Votre candidature est en attente de validation par l'administrateur.
-              </div>
-            )}
-
-            {/* ── Liste des candidats validés ── */}
-            {candidatsValides.length === 0 ? (
-              <div style={{ color:"var(--text3)", fontSize:13, textAlign:"center", padding:"16px 0" }}>
-                {elec.statut === "candidatures"
-                  ? "Aucun candidat validé pour le moment"
-                  : "Aucun candidat pour cette élection"}
-              </div>
-            ) : (
-              <div>
-                <div style={{ fontSize:12, fontWeight:600, color:"var(--text3)", textTransform:"uppercase",
-                  letterSpacing:1.5, marginBottom:12 }}>
-                  {elec.statut === "candidatures" ? "Candidats validés" : "Résultats"}
-                </div>
-                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                  {sorted.map((c, i) => {
-                    const pct      = total > 0 ? Math.round((c.votes || 0) / total * 100) : 0;
-                    const isWinner = elec.statut === "cloturée" && i === 0 && c.votes > 0;
-                    return (
-                      <div key={c.id} style={{
-                        background: isWinner ? "rgba(255,193,7,0.07)" : "var(--surface)",
-                        border:`1px solid ${isWinner ? "rgba(255,193,7,0.25)" : "var(--border)"}`,
-                        borderRadius:12, padding:"14px 18px",
-                        display:"flex", alignItems:"center", gap:16
-                      }}>
-                        {/* Rang */}
-                        <div style={{
-                          width:32, height:32, borderRadius:9, flexShrink:0,
-                          background: isWinner ? "rgba(255,193,7,0.15)" : "rgba(255,255,255,0.05)",
-                          display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:14, fontWeight:700,
-                          color: isWinner ? "var(--gold)" : "var(--text3)"
-                        }}>
-                          {isWinner ? "🥇" : `#${i+1}`}
-                        </div>
-
-                        {/* Nom + barre */}
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                            <span style={{ fontWeight:500, fontSize:14,
-                              color: isWinner ? "var(--gold2)" : "var(--text)" }}>
-                              {c.nom}
-                            </span>
-                            {elec.statut !== "candidatures" && (
-                              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"var(--text2)" }}>
-                                {c.votes||0} vote{(c.votes||0)>1?"s":""} — {pct}%
-                              </span>
-                            )}
-                          </div>
-                          {elec.statut !== "candidatures" && (
-                            <div className="prog-track">
-                              <div className="prog-fill" style={{
-                                width:`${pct}%`,
-                                background: isWinner
-                                  ? "linear-gradient(90deg,#FFC107,#FFD54F)"
-                                  : "linear-gradient(90deg,#4ecdc4,#60aff0)"
-                              }}/>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Bouton voter */}
-                        {elec.statut === "vote" && !dejaVote && estMembre && (
-                          <button className="btn btn-gold btn-sm" style={{ flexShrink:0 }}
-                            onClick={() => voter(elec, c.id)}>
-                            Voter
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+            {/* Message si déjà voté */}
+            {dejaVote && !ferme && estMembre && (
+              <div className="alert alert-success" style={{ marginTop:16, marginBottom:0 }}>
+                ✓ Vous avez voté — résultats mis à jour en temps réel
               </div>
             )}
           </div>
