@@ -896,7 +896,48 @@ export default function App() {
   };
 
   /* ─ ÉVÉNEMENTS ─ */
-  const Evenements = ({isAdmin=false}) => (
+const Evenements = ({isAdmin=false}) => {
+  const [participants, setParticipants] = useState({});
+  const [detailEv, setDetailEv] = useState(null);
+
+  useEffect(() => {
+    const u = onSnapshot(collection(db, "participants"), s => {
+      const map = {};
+      s.docs.forEach(d => {
+        const data = d.data();
+        if (!map[data.eventId]) map[data.eventId] = [];
+        map[data.eventId].push({ id: d.id, ...data });
+      });
+      setParticipants(map);
+    });
+    return () => u();
+  }, []);
+
+  const monProfil = membres.find(m => m.etudiantId === user.uid);
+
+  // ── Participer / Se désinscrire ──
+  async function toggleParticiper(ev) {
+    const liste = participants[ev.id] || [];
+    const dejaThere = liste.find(p => p.etudiantId === user.uid);
+
+    if (dejaThere) {
+      // Se désinscrire
+      await deleteDoc(doc(db, "participants", dejaThere.id));
+      notify("Désinscription effectuée.");
+    } else {
+      // S'inscrire
+      await addDoc(collection(db, "participants"), {
+        eventId:    ev.id,
+        etudiantId: user.uid,
+        nom:        monProfil?.nom || user.email,
+        clubId:     monProfil?.clubId || "",
+        date:       new Date(),
+      });
+      notify(`Inscrit à « ${ev.title} » ! ✓`);
+    }
+  }
+
+  return (
     <div style={{animation:"slideUp 0.35s ease"}}>
       <div className="page-header">
         <div>
@@ -906,25 +947,118 @@ export default function App() {
         </div>
         {isAdmin && <button className="btn btn-gold" onClick={()=>setModal("event")}>⊕ Nouvel événement</button>}
       </div>
-      <div className="events-list">
-        {events.map(ev=>(
-          <div key={ev.id} className="ev-row">
-            <div className="ev-date"><div className="ev-day">{ev.day}</div><div className="ev-month">{ev.month}</div></div>
-            <div className="ev-info">
-              <div className="ev-name">{ev.title}</div>
-              {/* ✅ CORRIGÉ : utilise nomClub(ev.clubId) */}
-              <div className="ev-meta"><span className="ev-tag">{nomClub(ev.clubId || ev.club)}</span><span>📍 {ev.lieu}</span><span>👥 {ev.nb||0} places</span></div>
+
+      {/* ── MODAL PARTICIPANTS (admin) ── */}
+      {detailEv && (
+        <div className="overlay" onClick={() => setDetailEv(null)}>
+          <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-head">
+              <div className="modal-ttl">👥 Participants — {detailEv.title}</div>
+              <button className="close-btn" onClick={() => setDetailEv(null)}>✕</button>
             </div>
-            <div style={{display:"flex",gap:8}}>
-              <button className="btn btn-gold btn-sm" onClick={()=>notify(`Inscrit à « ${ev.title} » !`)}>Participer</button>
-              {isAdmin && <button className="btn btn-rose btn-sm" onClick={()=>{deleteDoc(doc(db,"evenements",ev.id));notify("Événement supprimé.");}}>🗑</button>}
+            <div style={{ marginBottom: 12, fontSize: 13, color: "var(--text3)" }}>
+              {(participants[detailEv.id] || []).length} participant{(participants[detailEv.id] || []).length > 1 ? "s" : ""} inscrits
             </div>
+            {(participants[detailEv.id] || []).length === 0 ? (
+              <div style={{ textAlign:"center", padding:"24px 0", color:"var(--text3)", fontSize:13 }}>
+                Aucun participant pour le moment
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:8, maxHeight:360, overflowY:"auto" }}>
+                {(participants[detailEv.id] || []).map((p, i) => (
+                  <div key={p.id} style={{
+                    display:"flex", alignItems:"center", gap:12,
+                    background:"var(--glass)", border:"1px solid var(--border)",
+                    borderRadius:10, padding:"10px 14px"
+                  }}>
+                    <div className="av" style={{ background:"#4f6ef7", width:32, height:32, fontSize:12 }}>
+                      {(p.nom||"?")[0]}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:500, fontSize:13, color:"var(--text)" }}>{p.nom}</div>
+                      <div style={{ fontSize:11, color:"var(--text3)" }}>{nomClub(p.clubId)}</div>
+                    </div>
+                    <span style={{ fontSize:11, color:"var(--text3)" }}>#{i+1}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        ))}
-        {events.length===0 && <div className="empty-state"><div className="empty-icon">📅</div><div className="empty-text">Aucun événement planifié</div><div className="empty-sub">L'administrateur peut en ajouter depuis le panneau admin</div></div>}
+        </div>
+      )}
+
+      {/* ── LISTE ÉVÉNEMENTS ── */}
+      <div className="events-list">
+        {events.map(ev => {
+          const liste     = participants[ev.id] || [];
+          const nbPart    = liste.length;
+          const estInscrit = liste.some(p => p.etudiantId === user.uid);
+
+          return (
+            <div key={ev.id} className="ev-row">
+              {/* Date */}
+              <div className="ev-date">
+                <div className="ev-day">{ev.day}</div>
+                <div className="ev-month">{ev.month}</div>
+              </div>
+
+              {/* Infos */}
+              <div className="ev-info">
+                <div className="ev-name">{ev.title}</div>
+                <div className="ev-meta">
+                  <span className="ev-tag">{nomClub(ev.clubId || ev.club)}</span>
+                  <span>📍 {ev.lieu}</span>
+                  <span style={{
+                    color: estInscrit ? "var(--teal)" : "var(--text3)",
+                    fontWeight: estInscrit ? 600 : 400
+                  }}>
+                    👥 {nbPart} participant{nbPart > 1 ? "s" : ""}
+                  </span>
+                  {estInscrit && (
+                    <span className="badge badge-teal">✓ Inscrit</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                {/* Bouton participer / se désinscrire */}
+                <button
+                  className={`btn btn-sm ${estInscrit ? "btn-ghost" : "btn-gold"}`}
+                  onClick={() => toggleParticiper(ev)}>
+                  {estInscrit ? "✕ Se désinscrire" : "✓ Participer"}
+                </button>
+
+                {/* Admin : voir participants + supprimer */}
+                {isAdmin && (
+                  <>
+                    <button className="btn btn-teal btn-sm"
+                      onClick={() => setDetailEv(ev)}>
+                      👥 {nbPart}
+                    </button>
+                    <button className="btn btn-rose btn-sm"
+                      onClick={() => {
+                        deleteDoc(doc(db, "evenements", ev.id));
+                        notify("Événement supprimé.");
+                      }}>🗑</button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {events.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">📅</div>
+            <div className="empty-text">Aucun événement planifié</div>
+            <div className="empty-sub">L'administrateur peut en ajouter depuis le panneau admin</div>
+          </div>
+        )}
       </div>
     </div>
   );
+};
 
   /* ─ MEMBRES ─ */
   const Membres = ({isAdmin=false}) => {
